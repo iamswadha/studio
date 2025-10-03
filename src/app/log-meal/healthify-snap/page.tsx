@@ -1,9 +1,10 @@
 'use client';
 import { HealthifySnap } from "@/components/healthify-snap";
 import { useFirestore, useUser, addDocumentNonBlocking } from "@/firebase";
-import { useRouter } from "next/navigation";
-import { collection, serverTimestamp } from "firebase/firestore";
+import { useRouter, useSearchParams } from "next/navigation";
+import { collection, Timestamp } from "firebase/firestore";
 import type { MealTime } from "../layout";
+import { startOfDay } from "date-fns";
 
 type FoodItem = {
     id: number;
@@ -18,6 +19,8 @@ export default function HealthifySnapPage() {
     const router = useRouter();
     const { user } = useUser();
     const firestore = useFirestore();
+    const searchParams = useSearchParams();
+    const dateParam = searchParams.get('date');
 
 
     const handleLogMeal = (meal: {
@@ -28,10 +31,13 @@ export default function HealthifySnapPage() {
     }) => {
         if (!user || !meal.mealTime) return;
 
+        const selectedDate = dateParam ? new Date(dateParam) : new Date();
+        const mealTimestamp = startOfDay(selectedDate);
+
         const mealToLog = {
         ...meal,
         userId: user.uid,
-        timestamp: serverTimestamp(),
+        timestamp: Timestamp.fromDate(mealTimestamp),
         };
 
         const mealsCol = collection(firestore, 'users', user.uid, 'meals');

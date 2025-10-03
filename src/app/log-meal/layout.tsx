@@ -141,6 +141,8 @@ export default function LogMealLayout({
     activeTabValue ?? ''
   );
 
+  const dateParam = currentDate.toISOString();
+
   return (
     <AppShell>
       <div className="flex flex-col gap-8">
@@ -177,12 +179,12 @@ export default function LogMealLayout({
               </ScrollArea>
               <div className="flex gap-2 ml-2 shrink-0">
                 <Button variant="outline" asChild>
-                  <Link href="/log-meal/manual">
+                  <Link href={`/log-meal/manual?date=${dateParam}`}>
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Food
                   </Link>
                 </Button>
                  <Button asChild>
-                  <Link href="/log-meal/healthify-snap">
+                  <Link href={`/log-meal/healthify-snap?date=${dateParam}`}>
                     <Camera className="mr-2 h-4 w-4" /> Snap Meal
                   </Link>
                 </Button>
@@ -194,6 +196,7 @@ export default function LogMealLayout({
                 <MealContent
                   mealTime={meal.value as MealTime}
                   loggedMeals={loggedMeals[meal.value as MealTime] || []}
+                  currentDate={currentDate}
                 />
               </TabsContent>
             ))}

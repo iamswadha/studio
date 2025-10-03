@@ -31,10 +31,11 @@ const suggestions = [
   },
 ];
 
-export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, loggedMeals: LoggedMeal[] }) => {
+export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: string, loggedMeals: LoggedMeal[], currentDate: Date }) => {
   const totalCals = loggedMeals.reduce((sum, meal) => sum + meal.totalNutrition.calories, 0);
   const { user } = useUser();
   const firestore = useFirestore();
+  const dateParam = currentDate.toISOString();
 
   const handleDeleteMeal = (mealId: string) => {
     if (!user) return;
@@ -56,12 +57,12 @@ export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, logge
             <p className="text-4xl font-bold">{Math.round(totalCals)} <span className="text-lg text-muted-foreground">Cal</span></p>
              <div className="flex justify-center items-center gap-4">
                 <Button asChild variant="outline">
-                <Link href="/log-meal/manual">
+                <Link href={`/log-meal/manual?date=${dateParam}`}>
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Food
                 </Link>
                 </Button>
                 <Button asChild>
-                <Link href="/log-meal/healthify-snap">
+                <Link href={`/log-meal/healthify-snap?date=${dateParam}`}>
                     <Camera className="mr-2 h-4 w-4" /> Snap Meal
                 </Link>
                 </Button>
@@ -74,12 +75,12 @@ export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, logge
                 <p className="text-2xl font-bold">{Math.round(totalCals)} <span className="text-lg text-muted-foreground">Cal</span></p>
                 <div className="flex items-center gap-2">
                     <Button asChild variant="outline" size="sm">
-                    <Link href="/log-meal/manual">
+                    <Link href={`/log-meal/manual?date=${dateParam}`}>
                         <PlusCircle className="mr-2 h-4 w-4" /> Add Food
                     </Link>
                     </Button>
                     <Button asChild size="sm">
-                    <Link href="/log-meal/healthify-snap">
+                    <Link href={`/log-meal/healthify-snap?date=${dateParam}`}>
                         <Camera className="mr-2 h-4 w-4" /> Snap Meal
                     </Link>
                     </Button>

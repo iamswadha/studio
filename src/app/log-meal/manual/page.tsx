@@ -33,9 +33,10 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import Link from 'next/link';
 import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
-import { collection, serverTimestamp } from 'firebase/firestore';
-import { useRouter } from 'next/navigation';
+import { collection, Timestamp } from 'firebase/firestore';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { MealTime } from '../layout';
+import { startOfDay } from 'date-fns';
 
 const mealSchema = z.object({
   mealTime: z.enum([
@@ -57,6 +58,8 @@ export default function ManualLogMealPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const dateParam = searchParams.get('date');
 
   const form = useForm<z.infer<typeof mealSchema>>({
     resolver: zodResolver(mealSchema),
@@ -79,6 +82,11 @@ export default function ManualLogMealPage() {
       });
       return;
     }
+    
+    const selectedDate = dateParam ? new Date(dateParam) : new Date();
+    // We adjust the timestamp to be the start of the day of the selected date.
+    // Firestore will handle server-side timestamping if we pass a Date object.
+    const mealTimestamp = startOfDay(selectedDate);
 
     const newMeal = {
       mealTime: values.mealTime as MealTime,
@@ -99,7 +107,7 @@ export default function ManualLogMealPage() {
         fat: values.fat,
       },
       userId: user.uid,
-      timestamp: serverTimestamp(),
+      timestamp: Timestamp.fromDate(mealTimestamp),
     };
 
     const mealsCol = collection(firestore, 'users', user.uid, 'meals');
