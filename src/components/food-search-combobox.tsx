@@ -8,7 +8,6 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
@@ -143,7 +142,7 @@ export function FoodSearchCombobox({
                       alt={suggestion.name}
                       width={24}
                       height={24}
-                      className="rounded-sm"
+                      className="rounded-sm object-cover"
                     />
                     <span>{suggestion.name}</span>
                   </div>
