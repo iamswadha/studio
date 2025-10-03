@@ -42,7 +42,6 @@ const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/activity', icon: HeartPulse, label: 'Activity' },
   { href: '/log-meal', icon: UtensilsCrossed, label: 'Log Meal' },
-  { href: '/healthify-snap', icon: Camera, label: 'HealthifySnap' },
   { href: '/progress', icon: BarChart3, label: 'Progress' },
 ];
 

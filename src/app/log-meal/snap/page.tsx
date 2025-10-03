@@ -28,8 +28,10 @@ import {
   Pencil,
   Check,
   X,
+  ArrowLeft,
 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { FoodSearchCombobox } from '@/components/food-search-combobox';
@@ -354,16 +356,21 @@ export default function HealthifySnapPage() {
   return (
     <AppShell>
       <div className="flex flex-col gap-8">
-        <PageHeader
-          title="HealthifySnap"
-          description="Snap a photo of your meal and let our AI do the rest. Effortless calorie and nutrient tracking is here."
-        />
+        <PageHeader title="HealthifySnap">
+             <Button variant="outline" asChild>
+                <Link href="/log-meal">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Insights
+                </Link>
+            </Button>
+        </PageHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
           <Card>
             <form onSubmit={handleFormSubmit}>
               <CardHeader>
                 <CardTitle>Upload Your Meal</CardTitle>
+                <CardDescription>Snap a photo of your meal and let our AI do the rest. Effortless calorie and nutrient tracking is here.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -463,5 +470,3 @@ export default function HealthifySnapPage() {
     </AppShell>
   );
 }
-
-    
