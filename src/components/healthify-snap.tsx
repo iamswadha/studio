@@ -1,8 +1,5 @@
 'use client';
 
-import { AppShell } from '@/components/app-shell';
-import { PageHeader } from '@/components/page-header';
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -11,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
@@ -26,15 +24,19 @@ import {
   Trash2,
   PlusCircle,
   Pencil,
-  Check,
   X,
-  ArrowLeft,
 } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useState, useRef, useMemo, useCallback } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { FoodSearchCombobox } from '@/components/food-search-combobox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type FoodItem = {
   id: number;
@@ -45,14 +47,29 @@ type FoodItem = {
   fat: number;
 };
 
-export default function HealthifySnapPage() {
+type MealTime =
+  | 'breakfast'
+  | 'morningSnack'
+  | 'lunch'
+  | 'eveningSnack'
+  | 'dinner';
+
+export function HealthifySnap({
+  onLogMeal,
+}: {
+  onLogMeal: (meal: {
+    mealTime: MealTime;
+    items: FoodItem[];
+    totalNutrition: any;
+  }) => void;
+}) {
   const [preview, setPreview] = useState<string | null>(null);
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState<number | null>(null);
-  const [editingValue, setEditingValue] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mealTime, setMealTime] = useState<MealTime>('breakfast');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const nextId = useRef(0);
 
@@ -142,14 +159,22 @@ export default function HealthifySnapPage() {
     }
   };
 
-  const handleLogMeal = () => {
+  const handleLogMealClick = () => {
     if (foodItems.length === 0) return;
+
+    onLogMeal({
+      mealTime,
+      items: foodItems,
+      totalNutrition,
+    });
+
     toast({
       title: 'Meal Logged!',
       description: `Successfully logged ${Math.round(
         totalNutrition.calories
-      )} kcal.`,
+      )} kcal for ${mealTime}.`,
     });
+
     setPreview(null);
     setFoodItems([]);
     if (fileInputRef.current) {
@@ -161,66 +186,66 @@ export default function HealthifySnapPage() {
     setFoodItems(foodItems.filter((item) => item.id !== id));
   };
 
-  const handleEditItem = (id: number, value: string) => {
+  const handleEditItem = (id: number) => {
     setIsEditing(id);
-    setEditingValue(value);
   };
 
-  const handleUpdateItem = useCallback(async (id: number, newName: string) => {
-    if (newName.trim() === '') {
-        // If the new name is empty, just cancel editing
+  const handleUpdateItem = useCallback(
+    async (id: number, newName: string) => {
+      if (newName.trim() === '') {
         setIsEditing(null);
-        setEditingValue('');
         return;
-    };
+      }
 
-    const originalItem = foodItems.find(item => item.id === id);
+      const originalItem = foodItems.find((item) => item.id === id);
 
-    // Optimistically update the UI
-    setFoodItems((currentItems) =>
-      currentItems.map((item) =>
-        item.id === id
-          ? { ...item, name: newName, calories: 0, protein: 0, carbohydrates: 0, fat: 0 } // Clear old nutrition
-          : item
-      )
-    );
-    setIsEditing(null);
-    setEditingValue('');
-
-    // Fetch new nutrition data
-    const nutrition = await getSingleItemNutrition({
-      foodItemName: newName,
-    });
-
-    if (nutrition.success && nutrition.data) {
       setFoodItems((currentItems) =>
         currentItems.map((item) =>
           item.id === id
-            ? { ...item, name: newName, ...nutrition.data }
+            ? {
+                ...item,
+                name: newName,
+                calories: 0,
+                protein: 0,
+                carbohydrates: 0,
+                fat: 0,
+              }
             : item
         )
       );
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Could not fetch nutrition data',
-        description: `Could not get data for "${newName}". Reverting name.`,
-      });
-      // Revert optimistic update on failure
-       if (originalItem) {
-          setFoodItems((currentItems) =>
-            currentItems.map((item) =>
-              item.id === id ? originalItem : item
-            )
-          );
-       }
-    }
-  }, [foodItems]);
+      setIsEditing(null);
 
+      const nutrition = await getSingleItemNutrition({
+        foodItemName: newName,
+      });
+
+      if (nutrition.success && nutrition.data) {
+        setFoodItems((currentItems) =>
+          currentItems.map((item) =>
+            item.id === id
+              ? { ...item, name: newName, ...nutrition.data }
+              : item
+          )
+        );
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Could not fetch nutrition data',
+          description: `Could not get data for "${newName}". Reverting name.`,
+        });
+        if (originalItem) {
+          setFoodItems((currentItems) =>
+            currentItems.map((item) => (item.id === id ? originalItem : item))
+          );
+        }
+      }
+    },
+    [foodItems]
+  );
 
   const handleAddItem = async (itemName: string) => {
     if (itemName.trim() === '') return;
-    
+
     setIsAdding(false);
 
     const nutrition = await getSingleItemNutrition({
@@ -285,13 +310,13 @@ export default function HealthifySnapPage() {
                 className="flex items-center justify-between text-sm"
               >
                 {isEditing === item.id ? (
-                   <FoodSearchCombobox
-                      defaultValue={item.name}
-                      onSelect={(value) => {
-                        handleUpdateItem(item.id, value);
-                      }}
-                      onCancel={() => setIsEditing(null)}
-                    />
+                  <FoodSearchCombobox
+                    defaultValue={item.name}
+                    onSelect={(value) => {
+                      handleUpdateItem(item.id, value);
+                    }}
+                    onCancel={() => setIsEditing(null)}
+                  />
                 ) : (
                   <>
                     <span className="flex-1">{item.name}</span>
@@ -302,7 +327,7 @@ export default function HealthifySnapPage() {
                       size="icon"
                       variant="ghost"
                       className="h-6 w-6"
-                      onClick={() => handleEditItem(item.id, item.name)}
+                      onClick={() => handleEditItem(item.id)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -319,26 +344,26 @@ export default function HealthifySnapPage() {
               </li>
             ))}
             {isAdding && (
-               <li className="flex gap-2">
+              <li className="flex gap-2">
                 <FoodSearchCombobox
                   onSelect={(value) => {
                     handleAddItem(value);
                     setIsAdding(false);
                   }}
-                   onCancel={() => setIsAdding(false)}
+                  onCancel={() => setIsAdding(false)}
                 />
-                 <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8"
-                    onClick={() => setIsAdding(false)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8"
+                  onClick={() => setIsAdding(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
               </li>
             )}
           </ul>
-           {!isAdding && (
+          {!isAdding && (
             <Button
               variant="ghost"
               className="w-full mt-2"
@@ -354,119 +379,125 @@ export default function HealthifySnapPage() {
   );
 
   return (
-    <AppShell>
-      <div className="flex flex-col gap-8">
-        <PageHeader title="HealthifySnap">
-             <Button variant="outline" asChild>
-                <Link href="/log-meal">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Insights
-                </Link>
-            </Button>
-        </PageHeader>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          <Card>
-            <form onSubmit={handleFormSubmit}>
-              <CardHeader>
-                <CardTitle>Upload Your Meal</CardTitle>
-                <CardDescription>Snap a photo of your meal and let our AI do the rest. Effortless calorie and nutrient tracking is here.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="meal-photo">Meal Photo</Label>
-                  <Input
-                    id="meal-photo"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    ref={fileInputRef}
-                    className="file:text-primary file:font-semibold"
-                  />
-                </div>
-                {preview && (
-                  <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
-                    <Image
-                      src={preview}
-                      alt="Meal preview"
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter>
-                <Button
-                  type="submit"
-                  disabled={!preview || isLoading}
-                  className="w-full"
-                  size="lg"
-                >
-                  {isLoading && foodItems.length === 0 ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Camera className="mr-2 h-4 w-4" />
-                  )}
-                  {isLoading && foodItems.length === 0
-                    ? 'Analyzing...'
-                    : 'Analyze Meal'}
-                </Button>
-              </CardFooter>
-            </form>
-          </Card>
-
-          <Card className="sticky top-24">
-            <CardHeader>
-              <CardTitle>Analysis Results</CardTitle>
-              <CardDescription>
-                Here's what our AI found in your meal. You can edit items before
-                logging.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading && foodItems.length === 0 && (
-                <div className="flex flex-col items-center justify-center gap-4 text-center p-8">
-                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                  <p className="font-semibold">Analyzing your meal...</p>
-                  <p className="text-sm text-muted-foreground">
-                    This might take a moment. Our AI is hard at work!
-                  </p>
-                </div>
-              )}
-              {error && !isLoading && (
-                <div className="text-destructive text-center p-8">
-                  <p className="font-bold">Oops! Something went wrong.</p>
-                  <p className="text-sm">{error}</p>
-                </div>
-              )}
-              {!isLoading &&
-                foodItems.length === 0 &&
-                !error && (
-                  <div className="text-center p-8 text-muted-foreground">
-                    <p>Upload a photo to see the nutritional analysis.</p>
-                  </div>
-                )}
-              {foodItems.length > 0 && <AnalysisResults />}
-            </CardContent>
-            {foodItems.length > 0 && (
-              <CardFooter>
-                <Button
-                  onClick={handleLogMeal}
-                  className="w-full"
-                  variant="secondary"
-                  disabled={isLoading}
-                >
-                  {isLoading && foodItems.some(item => item.calories === 0) ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    'Log This Meal'
-                  )}
-                </Button>
-              </CardFooter>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      <Card>
+        <form onSubmit={handleFormSubmit}>
+          <CardHeader>
+            <CardTitle>Upload Your Meal</CardTitle>
+            <CardDescription>
+              Snap a photo of your meal and let our AI do the rest. Effortless
+              calorie and nutrient tracking is here.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="meal-photo">Meal Photo</Label>
+              <Input
+                id="meal-photo"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                ref={fileInputRef}
+                className="file:text-primary file:font-semibold"
+              />
+            </div>
+            {preview && (
+              <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
+                <Image
+                  src={preview}
+                  alt="Meal preview"
+                  fill
+                  className="object-cover"
+                />
+              </div>
             )}
-          </Card>
-        </div>
-      </div>
-    </AppShell>
+          </CardContent>
+          <CardFooter>
+            <Button
+              type="submit"
+              disabled={!preview || isLoading}
+              className="w-full"
+              size="lg"
+            >
+              {isLoading && foodItems.length === 0 ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Camera className="mr-2 h-4 w-4" />
+              )}
+              {isLoading && foodItems.length === 0
+                ? 'Analyzing...'
+                : 'Analyze Meal'}
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
+
+      <Card className="sticky top-24">
+        <CardHeader>
+          <CardTitle>Analysis Results</CardTitle>
+          <CardDescription>
+            Here's what our AI found in your meal. You can edit items before
+            logging.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoading && foodItems.length === 0 && (
+            <div className="flex flex-col items-center justify-center gap-4 text-center p-8">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              <p className="font-semibold">Analyzing your meal...</p>
+              <p className="text-sm text-muted-foreground">
+                This might take a moment. Our AI is hard at work!
+              </p>
+            </div>
+          )}
+          {error && !isLoading && (
+            <div className="text-destructive text-center p-8">
+              <p className="font-bold">Oops! Something went wrong.</p>
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
+          {!isLoading && foodItems.length === 0 && !error && (
+            <div className="text-center p-8 text-muted-foreground">
+              <p>Upload a photo to see the nutritional analysis.</p>
+            </div>
+          )}
+          {foodItems.length > 0 && <AnalysisResults />}
+        </CardContent>
+        {foodItems.length > 0 && (
+          <CardFooter className="flex-col gap-4 items-stretch">
+            <div className="space-y-2">
+              <Label htmlFor="meal-time">Log this meal as:</Label>
+              <Select
+                value={mealTime}
+                onValueChange={(v) => setMealTime(v as MealTime)}
+              >
+                <SelectTrigger id="meal-time">
+                  <SelectValue placeholder="Select meal time" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="breakfast">Breakfast</SelectItem>
+                  <SelectItem value="morningSnack">Morning Snack</SelectItem>
+                  <SelectItem value="lunch">Lunch</SelectItem>
+                  <SelectItem value="eveningSnack">Evening Snack</SelectItem>
+                  <SelectItem value="dinner">Dinner</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              onClick={handleLogMealClick}
+              className="w-full"
+              variant="secondary"
+              disabled={isLoading}
+            >
+              {isLoading && foodItems.some((item) => item.calories === 0) ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                'Log This Meal'
+              )}
+            </Button>
+          </CardFooter>
+        )}
+      </Card>
+    </div>
   );
 }

@@ -75,7 +75,7 @@ export const MealContent = ({ mealTime }: { mealTime: MealTime }) => {
               </Link>
             </Button>
             <Button asChild>
-              <Link href="/log-meal/snap">
+              <Link href="/log-meal/healthify-snap">
                 <Camera className="mr-2 h-4 w-4" /> Snap Meal
               </Link>
             </Button>
