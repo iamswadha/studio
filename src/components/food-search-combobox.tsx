@@ -47,6 +47,17 @@ export function FoodSearchCombobox({
     (img) => img.id === 'food-suggestion-fallback'
   )?.imageUrl || 'https://picsum.photos/seed/food-fallback/100/100';
 
+  const ImageWithErrorFallback = ({ src, ...props }: React.ComponentProps<typeof Image>) => {
+    const [error, setError] = React.useState(false);
+
+    return (
+      <Image
+        src={error ? fallbackImage : src}
+        onError={() => setError(true)}
+        {...props}
+      />
+    );
+  };
 
   React.useEffect(() => {
     if (debouncedSearch && debouncedSearch.length > 2) {
@@ -138,7 +149,7 @@ export function FoodSearchCombobox({
                     )}
                   />
                   <div className="flex items-center gap-2">
-                    <Image
+                    <ImageWithErrorFallback
                       src={suggestion.imageUrl || fallbackImage}
                       alt={suggestion.name}
                       width={24}
