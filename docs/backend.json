@@ -1,0 +1,211 @@
+{
+  "entities": {
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
+      "type": "object",
+      "description": "Represents a user's profile with health data and fitness goals.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user profile."
+        },
+        "name": {
+          "type": "string",
+          "description": "User's full name."
+        },
+        "age": {
+          "type": "number",
+          "description": "User's age in years."
+        },
+        "gender": {
+          "type": "string",
+          "description": "User's gender."
+        },
+        "height": {
+          "type": "number",
+          "description": "User's height in centimeters."
+        },
+        "weight": {
+          "type": "number",
+          "description": "User's weight in kilograms."
+        },
+        "fitnessGoals": {
+          "type": "string",
+          "description": "User's fitness goals."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "age",
+        "gender",
+        "height",
+        "weight",
+        "fitnessGoals"
+      ]
+    },
+    "Meal": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Meal",
+      "type": "object",
+      "description": "Represents a meal logged by the user, including its contents and nutritional information.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the meal."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N Meal)"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Date and time when the meal was logged.",
+          "format": "date-time"
+        },
+        "foodItems": {
+          "type": "array",
+          "description": "List of food items included in the meal.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "totalCalories": {
+          "type": "number",
+          "description": "Total calories in the meal."
+        },
+        "totalProtein": {
+          "type": "number",
+          "description": "Total protein in the meal (grams)."
+        },
+        "totalCarbs": {
+          "type": "number",
+          "description": "Total carbohydrates in the meal (grams)."
+        },
+        "totalFat": {
+          "type": "number",
+          "description": "Total fat in the meal (grams)."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "timestamp",
+        "foodItems",
+        "totalCalories",
+        "totalProtein",
+        "totalCarbs",
+        "totalFat"
+      ]
+    },
+    "ActivityLog": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ActivityLog",
+      "type": "object",
+      "description": "Represents a user's activity data, synced from wearable devices or health platforms.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the activity log entry."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to UserProfile. (Relationship: UserProfile 1:N ActivityLog)"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Date and time of the activity.",
+          "format": "date-time"
+        },
+        "activityType": {
+          "type": "string",
+          "description": "Type of activity (e.g., steps, workout)."
+        },
+        "duration": {
+          "type": "number",
+          "description": "Duration of the activity in minutes."
+        },
+        "caloriesBurned": {
+          "type": "number",
+          "description": "Calories burned during the activity."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "timestamp",
+        "activityType",
+        "duration",
+        "caloriesBurned"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile data, including health metrics and fitness goals.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/meals/{mealId}",
+        "definition": {
+          "entityName": "Meal",
+          "schema": {
+            "$ref": "#/backend/entities/Meal"
+          },
+          "description": "Stores meal logs for each user.  Path-based ownership ensures only the user can access their own meals. Includes denormalized 'userId' for QAPs.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+            },
+            {
+              "name": "mealId",
+              "description": "The unique identifier for the meal."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/activityLogs/{activityLogId}",
+        "definition": {
+          "entityName": "ActivityLog",
+          "schema": {
+            "$ref": "#/backend/entities/ActivityLog"
+          },
+          "description": "Stores activity logs for each user. Path-based ownership ensures only the user can access their own activity logs. Includes denormalized 'userId' for QAPs.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Auth UID."
+            },
+            {
+              "name": "activityLogId",
+              "description": "The unique identifier for the activity log entry."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to store user profiles, meal logs, and activity logs. Each user has their own dedicated space for their data, ensuring privacy and efficient querying. The structure uses path-based ownership to simplify security rules and ensure data integrity. By structuring data under the `/users/{userId}` path, we achieve strong ownership and avoid the need for complex authorization logic or `get()` calls in security rules. This design enforces Authorization Independence, simplifies debugging, and supports secure `list` operations.\n\nThe `meals` and `activityLogs` subcollections are designed to store each user's data. This design pattern ensures that each collection has a homogeneous security posture. This structure supports secure and efficient data management for the OyeBhukkaD application."
+  }
+}
