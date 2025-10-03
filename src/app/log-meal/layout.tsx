@@ -28,6 +28,18 @@ type FoodItem = {
   fat: number;
 };
 
+type LoggedMeal = {
+  id: number;
+  items: FoodItem[];
+  imageUrl?: string;
+  totalNutrition: {
+    calories: number;
+    protein: number;
+    carbohydrates: number;
+    fat: number;
+  };
+};
+
 type MealTime =
   | 'breakfast'
   | 'morningSnack'
@@ -36,7 +48,7 @@ type MealTime =
   | 'dinner';
 
 type MealData = {
-  [key in MealTime]: FoodItem[];
+  [key in MealTime]: LoggedMeal[];
 };
 
 export default function LogMealLayout({
@@ -47,6 +59,7 @@ export default function LogMealLayout({
   const pathname = usePathname();
   const router = useRouter();
   const isMobile = useIsMobile();
+  const [nextMealId, setNextMealId] = useState(0);
 
   const mealTimes = [
     { value: 'breakfast', label: 'Breakfast' },
@@ -74,10 +87,20 @@ export default function LogMealLayout({
   const handleLogMeal = (meal: {
     mealTime: MealTime;
     items: FoodItem[];
+    totalNutrition: any;
+    imageUrl?: string;
   }) => {
+    const newMeal: LoggedMeal = {
+      id: nextMealId,
+      items: meal.items,
+      totalNutrition: meal.totalNutrition,
+      imageUrl: meal.imageUrl,
+    };
+    setNextMealId(prev => prev + 1);
+
     setLoggedMeals((prevMeals) => ({
       ...prevMeals,
-      [meal.mealTime]: [...prevMeals[meal.mealTime], ...meal.items],
+      [meal.mealTime]: [...prevMeals[meal.mealTime], newMeal],
     }));
     router.push(`/log-meal/${meal.mealTime}`);
   };
@@ -134,7 +157,7 @@ export default function LogMealLayout({
             ) : (
               <MealContent
                 mealTime={activeTab as MealTime}
-                items={loggedMeals[activeTab as MealTime] || []}
+                loggedMeals={loggedMeals[activeTab as MealTime] || []}
               />
             )}
           </TabsContent>

@@ -14,13 +14,25 @@ import Image from 'next/image';
 import { Separator } from './ui/separator';
 
 type FoodItem = {
-    id: number;
-    name: string;
+  id: number;
+  name: string;
+  calories: number;
+  protein: number;
+  carbohydrates: number;
+  fat: number;
+};
+
+type LoggedMeal = {
+  id: number;
+  items: FoodItem[];
+  imageUrl?: string;
+  totalNutrition: {
     calories: number;
     protein: number;
     carbohydrates: number;
     fat: number;
   };
+};
 
 const suggestions = [
   {
@@ -37,19 +49,19 @@ const suggestions = [
   },
 ];
 
-export const MealContent = ({ mealTime, items }: { mealTime: string, items: FoodItem[] }) => {
-  const totalCals = items.reduce((sum, item) => sum + item.calories, 0);
+export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, loggedMeals: LoggedMeal[] }) => {
+  const totalCals = loggedMeals.reduce((sum, meal) => sum + meal.totalNutrition.calories, 0);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
-            <span>{mealTime.charAt(0).toUpperCase() + mealTime.slice(1).replace('Snack', ' Snack')}</span>
+            <span className="capitalize">{mealTime.replace('Snack', ' Snack')}</span>
             <span className="text-lg font-bold">{Math.round(totalCals)} Cal</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {items.length === 0 ? (
+        {loggedMeals.length === 0 ? (
           <div className="text-center text-muted-foreground py-8 space-y-4">
              <div className="flex justify-center items-center gap-4">
                 <Button asChild variant="outline">
@@ -80,23 +92,44 @@ export const MealContent = ({ mealTime, items }: { mealTime: string, items: Food
                 </Button>
             </div>
             <Separator />
-            {items.map((item) => (
-              <div key={item.id} className="grid grid-cols-2 items-center gap-4 pt-4">
-                <div>
-                  <p className="font-bold">{item.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {Math.round(item.protein)}g P, {Math.round(item.carbohydrates)}g C, {Math.round(item.fat)}g F
-                  </p>
+            {loggedMeals.map((meal) => (
+              <div key={meal.id} className="grid grid-cols-3 items-start gap-4 pt-4">
+                 <div className="col-span-1">
+                  {meal.imageUrl && (
+                     <Image
+                      src={meal.imageUrl}
+                      alt="Logged meal"
+                      width={100}
+                      height={100}
+                      className="rounded-lg object-cover aspect-square"
+                    />
+                  )}
                 </div>
-                <div className="text-right">
-                  <p className="font-bold">{Math.round(item.calories)} Cal</p>
+                <div className='col-span-2 space-y-2'>
+                    {meal.items.map(item => (
+                        <div key={item.id} className="grid grid-cols-2 items-center gap-4">
+                            <div>
+                                <p className="font-bold">{item.name}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    {Math.round(item.protein)}g P, {Math.round(item.carbohydrates)}g C, {Math.round(item.fat)}g F
+                                </p>
+                            </div>
+                            <div className="text-right">
+                                <p className="font-bold">{Math.round(item.calories)} Cal</p>
+                            </div>
+                        </div>
+                    ))}
+                    <Separator />
+                     <div className="text-right font-bold">
+                        Total: {Math.round(meal.totalNutrition.calories)} Cal
+                    </div>
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {mealTime === 'morningSnack' && items.length > 0 && (
+        {mealTime === 'morningSnack' && loggedMeals.length > 0 && (
           <>
             <div className="my-6 p-4 bg-card-foreground/5 rounded-lg text-center">
               <p className="font-semibold mb-2">Was this insight helpful?</p>

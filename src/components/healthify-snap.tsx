@@ -61,6 +61,7 @@ export function HealthifySnap({
     mealTime: MealTime;
     items: FoodItem[];
     totalNutrition: any;
+    imageUrl?: string;
   }) => void;
 }) {
   const [preview, setPreview] = useState<string | null>(null);
@@ -166,6 +167,7 @@ export function HealthifySnap({
       mealTime,
       items: foodItems,
       totalNutrition,
+      imageUrl: preview || undefined,
     });
 
     toast({
