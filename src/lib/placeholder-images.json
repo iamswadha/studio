@@ -3,31 +3,31 @@
     {
       "id": "user-avatar",
       "description": "A placeholder for a user's avatar.",
-      "imageUrl": "https://images.unsplash.com/photo-1653691040409-793d2c22ed69?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxwb3J0cmFpdCUyMHBlcnNvbnxlbnwwfHx8fDE3NTk0Mzc3MzF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=1780&auto=format&fit=crop",
       "imageHint": "portrait person"
     },
     {
       "id": "signup-hero",
       "description": "A vibrant hero image for the signup page showing healthy food.",
-      "imageUrl": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxoZWFsdGh5JTIwZm9vZHxlbnwwfHx8fDE3NTkzODc4MDZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1780&auto=format&fit=crop",
       "imageHint": "healthy food"
     },
     {
       "id": "meal-1",
       "description": "A placeholder image of a delicious-looking meal.",
-      "imageUrl": "https://images.unsplash.com/photo-1631311695255-8dde6bf96cb5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxzYWxhZCUyMGJvd2x8ZW58MHx8fHwxNzU5Mzg2MDQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=1770&auto=format&fit=crop",
       "imageHint": "salad bowl"
     },
     {
       "id": "meal-2",
       "description": "A placeholder image of another delicious-looking meal.",
-      "imageUrl": "https://images.unsplash.com/photo-1632158929962-a929c9e87570?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxncmlsbGVkJTIwY2hpY2tlbnxlbnwwfHx8fDE3NTkzODc2MjV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1598515213692-5f284144e544?q=80&w=1770&auto=format&fit=crop",
       "imageHint": "grilled chicken"
     },
     {
       "id": "meal-3",
       "description": "A placeholder image of a breakfast meal.",
-      "imageUrl": "https://images.unsplash.com/photo-1628556820645-63ba5f90e6a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxhdm9jYWRvJTIwdG9hc3R8ZW58MHx8fHwxNzU5Mzk3MDUwfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1484723050470-74bf243AB4B1?q=80&w=1770&auto=format&fit=crop",
       "imageHint": "avocado toast"
     },
     {
