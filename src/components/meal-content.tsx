@@ -8,31 +8,11 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Camera } from 'lucide-react';
+import { PlusCircle, Camera, Clock } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Separator } from './ui/separator';
-
-type FoodItem = {
-  id: number;
-  name: string;
-  calories: number;
-  protein: number;
-  carbohydrates: number;
-  fat: number;
-};
-
-type LoggedMeal = {
-  id: number;
-  items: FoodItem[];
-  imageUrl?: string;
-  totalNutrition: {
-    calories: number;
-    protein: number;
-    carbohydrates: number;
-    fat: number;
-  };
-};
+import type { LoggedMeal } from '@/app/log-meal/layout';
 
 const suggestions = [
   {
@@ -78,7 +58,7 @@ export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, logge
             <p>No food logged for this meal yet.</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
              <div className="flex justify-end items-center gap-2 mb-4">
                 <Button asChild variant="outline">
                 <Link href="/log-meal/manual">
@@ -92,40 +72,51 @@ export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, logge
                 </Button>
             </div>
             <Separator />
-            {loggedMeals.map((meal) => (
-              <div key={meal.id} className="grid grid-cols-3 items-start gap-4 pt-4">
-                 <div className="col-span-1">
-                  {meal.imageUrl && (
-                     <Image
-                      src={meal.imageUrl}
-                      alt="Logged meal"
-                      width={100}
-                      height={100}
-                      className="rounded-lg object-cover aspect-square"
-                    />
-                  )}
-                </div>
-                <div className='col-span-2 space-y-2'>
-                    {meal.items.map(item => (
-                        <div key={item.id} className="grid grid-cols-2 items-center gap-4">
-                            <div>
-                                <p className="font-bold">{item.name}</p>
-                                <p className="text-sm text-muted-foreground">
-                                    {Math.round(item.protein)}g P, {Math.round(item.carbohydrates)}g C, {Math.round(item.fat)}g F
-                                </p>
-                            </div>
-                            <div className="text-right">
-                                <p className="font-bold">{Math.round(item.calories)} Cal</p>
-                            </div>
-                        </div>
-                    ))}
-                    <Separator />
-                     <div className="text-right font-bold">
-                        Total: {Math.round(meal.totalNutrition.calories)} Cal
+            <div className="relative pl-8">
+              <div className="absolute left-[1px] top-0 h-full w-0.5 bg-border -translate-x-1/2"></div>
+              {loggedMeals.map((meal, index) => (
+                <div key={meal.id} className="relative mb-8">
+                   <div className="absolute left-0 top-0.5 h-4 w-4 rounded-full bg-primary border-4 border-background -translate-x-1/2"></div>
+                   <div className="flex items-center gap-2 mb-2">
+                     <Clock className="h-4 w-4 text-muted-foreground" />
+                     <p className="font-semibold text-sm">{meal.timestamp}</p>
+                   </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4">
+                    <div className="col-span-1">
+                      {meal.imageUrl && (
+                        <Image
+                          src={meal.imageUrl}
+                          alt="Logged meal"
+                          width={150}
+                          height={150}
+                          className="rounded-lg object-cover aspect-square"
+                        />
+                      )}
                     </div>
+                    <div className='col-span-2 space-y-3'>
+                        {meal.items.map(item => (
+                            <div key={item.id} className="grid grid-cols-2 items-center gap-4">
+                                <div>
+                                    <p className="font-bold">{item.name}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {Math.round(item.protein)}g P, {Math.round(item.carbohydrates)}g C, {Math.round(item.fat)}g F
+                                    </p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="font-bold">{Math.round(item.calories)} Cal</p>
+                                </div>
+                            </div>
+                        ))}
+                        <Separator />
+                         <div className="text-right font-bold">
+                            Total: {Math.round(meal.totalNutrition.calories)} Cal
+                        </div>
+                    </div>
+                  </div>
+                   {index < loggedMeals.length -1 && <Separator className="mt-6" />}
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
 

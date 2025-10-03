@@ -6,18 +6,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, PlusCircle } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import { useState } from 'react';
 import { HealthifySnap } from '@/components/healthify-snap';
 import { MealContent } from '@/components/meal-content';
-import { useIsMobile } from '@/hooks/use-mobile';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 type FoodItem = {
   id: number;
@@ -28,7 +20,7 @@ type FoodItem = {
   fat: number;
 };
 
-type LoggedMeal = {
+export type LoggedMeal = {
   id: number;
   items: FoodItem[];
   imageUrl?: string;
@@ -38,16 +30,17 @@ type LoggedMeal = {
     carbohydrates: number;
     fat: number;
   };
+  timestamp: string;
 };
 
-type MealTime =
+export type MealTime =
   | 'breakfast'
   | 'morningSnack'
   | 'lunch'
   | 'eveningSnack'
   | 'dinner';
 
-type MealData = {
+export type MealData = {
   [key in MealTime]: LoggedMeal[];
 };
 
@@ -58,7 +51,6 @@ export default function LogMealLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const isMobile = useIsMobile();
   const [nextMealId, setNextMealId] = useState(0);
 
   const mealTimes = [
@@ -73,8 +65,6 @@ export default function LogMealLayout({
   const activeTab =
     mealTimes.find((tab) => pathname.includes(tab.value))?.value ||
     'morningSnack';
-  
-  const activeTabLabel = mealTimes.find(tab => tab.value === activeTab)?.label || 'Select Meal';
 
   const [loggedMeals, setLoggedMeals] = useState<MealData>({
     breakfast: [],
@@ -95,12 +85,13 @@ export default function LogMealLayout({
       items: meal.items,
       totalNutrition: meal.totalNutrition,
       imageUrl: meal.imageUrl,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
     setNextMealId(prev => prev + 1);
 
     setLoggedMeals((prevMeals) => ({
       ...prevMeals,
-      [meal.mealTime]: [...prevMeals[meal.mealTime], newMeal],
+      [meal.mealTime]: [...prevMeals[meal.mealTime], newMeal].sort((a, b) => a.timestamp.localeCompare(b.timestamp)),
     }));
     router.push(`/log-meal/${meal.mealTime}`);
   };
@@ -113,54 +104,31 @@ export default function LogMealLayout({
           description="Log your meals to get AI-powered insights and recommendations."
         />
 
-        <Tabs value={activeTab} className="w-full">
-          <div className="flex items-center">
-            {isMobile ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex-1 justify-between">
-                    {activeTabLabel}
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-full">
-                  {mealTimes.map((meal) => (
-                    <DropdownMenuItem
-                      key={meal.value}
-                      asChild
-                      onSelect={() => router.push(`/log-meal/${meal.value}`)}
-                    >
-                       <Link href={`/log-meal/${meal.value}`}>{meal.label}</Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <ScrollArea className="w-full whitespace-nowrap">
-                <TabsList className="grid w-full grid-cols-6">
-                  {mealTimes.map((meal) => (
-                    <TabsTrigger key={meal.value} value={meal.value} asChild>
-                      <Link href={`/log-meal/${meal.value}`}>{meal.label}</Link>
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            )}
-            <Button variant="ghost" className="ml-2">
+        <Tabs value={activeTab} orientation="vertical" className="w-full grid grid-cols-1 md:grid-cols-4 gap-8 items-start">
+          <div className="col-span-1 flex flex-col items-stretch gap-2">
+            <TabsList className="grid w-full grid-cols-1 h-auto">
+              {mealTimes.map((meal) => (
+                <TabsTrigger key={meal.value} value={meal.value} asChild>
+                  <Link href={`/log-meal/${meal.value}`}>{meal.label}</Link>
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            <Button variant="ghost" className="w-full">
               <PlusCircle className="mr-2 h-4 w-4" /> Add Meal
             </Button>
           </div>
-          <TabsContent value={activeTab}>
-            {activeTab === 'healthify-snap' ? (
-              <HealthifySnap onLogMeal={handleLogMeal} />
-            ) : (
-              <MealContent
-                mealTime={activeTab as MealTime}
-                loggedMeals={loggedMeals[activeTab as MealTime] || []}
-              />
-            )}
-          </TabsContent>
+          <div className="col-span-1 md:col-span-3">
+            <TabsContent value={activeTab} className="mt-0">
+              {activeTab === 'healthify-snap' ? (
+                <HealthifySnap onLogMeal={handleLogMeal} />
+              ) : (
+                <MealContent
+                  mealTime={activeTab as MealTime}
+                  loggedMeals={loggedMeals[activeTab as MealTime] || []}
+                />
+              )}
+            </TabsContent>
+          </div>
         </Tabs>
       </div>
     </AppShell>
