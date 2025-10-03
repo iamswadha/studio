@@ -162,7 +162,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </DropdownMenu>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>
+      <div className="flex flex-1 flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-background/95 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
           <SidebarTrigger className="flex md:hidden" />
           <div className="flex-1">
@@ -170,8 +170,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           <ThemeToggle />
         </header>
-        <main className="flex-1 p-4 md:p-8">{children}</main>
-      </SidebarInset>
+        <SidebarInset>
+          <main className="flex-1 p-4 md:p-8">{children}</main>
+        </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }
