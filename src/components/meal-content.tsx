@@ -120,7 +120,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
         {loggedMeals.length === 0 ? (
           <div className="text-center text-muted-foreground py-8 space-y-4">
             <p className="text-4xl font-bold">{Math.round(totalCals)} <span className="text-lg text-muted-foreground">Cal</span></p>
-             <div className="flex justify-center items-center gap-4">
+             <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
                 <div className='max-w-xs w-full'>
                     {isAddingFood ? (
                         <div className='flex items-center justify-center gap-2'><Loader2 className="h-4 w-4 animate-spin" /> Adding...</div>
@@ -138,9 +138,9 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
           </div>
         ) : (
           <div className="space-y-6">
-             <div className="flex justify-between items-center mb-4">
+             <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
                 <p className="text-2xl font-bold">{Math.round(totalCals)} <span className="text-lg text-muted-foreground">Cal</span></p>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
                     <div className='max-w-xs w-full'>
                          {isAddingFood ? (
                             <div className='flex items-center justify-center gap-2'><Loader2 className="h-4 w-4 animate-spin" /> Adding...</div>
@@ -148,7 +148,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
                             <FoodSearchCombobox onSelect={handleAddFood} />
                         )}
                     </div>
-                    <Button asChild size="sm">
+                    <Button asChild size="sm" className="w-full sm:w-auto">
                     <Link href={`/log-meal/healthify-snap?date=${dateParam}`}>
                         <Camera className="mr-2 h-4 w-4" /> Snap Meal
                     </Link>

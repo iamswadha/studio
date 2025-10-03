@@ -319,7 +319,7 @@ export function HealthifySnap({
                     <FoodSearchCombobox
                       defaultValue={item.name}
                       onSelect={(value) => {
-                        handleUpdateItem(item.id, value);
+                        handleUpdateItem(item.id, value.name);
                       }}
                     />
                   </div>
@@ -354,7 +354,7 @@ export function HealthifySnap({
                 <div className="w-full">
                   <FoodSearchCombobox
                     onSelect={(value) => {
-                      handleAddItem(value);
+                      handleAddItem(value.name);
                       setIsAdding(false);
                     }}
                   />
