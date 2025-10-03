@@ -21,11 +21,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Utensils } from 'lucide-react';
+import { Utensils, ArrowLeft } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
 
 const mealSchema = z.object({
   foodName: z.string().min(2, 'Food name is required.'),
@@ -36,6 +35,7 @@ const mealSchema = z.object({
 });
 
 export default function ManualLogMealPage() {
+  const { toast } = useToast();
   const form = useForm<z.infer<typeof mealSchema>>({
     resolver: zodResolver(mealSchema),
     defaultValues: {
