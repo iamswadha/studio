@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Check, ChevronsUpDown, Loader2, PlusCircle, X } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader2, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,7 +20,6 @@ import {
 import { getFoodSuggestions } from '@/lib/actions';
 import { useDebounce } from '@/hooks/use-debounce';
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 type Suggestion = {
   name: string;
@@ -30,24 +29,20 @@ type Suggestion = {
 interface FoodSearchComboboxProps {
   onSelect: (value: string) => void;
   defaultValue?: string;
-  onCancel?: () => void;
 }
 
 export function FoodSearchCombobox({
   onSelect,
   defaultValue,
-  onCancel,
 }: FoodSearchComboboxProps) {
-  const [open, setOpen] = React.useState(true); // Start open by default when editing
+  const [open, setOpen] = React.useState(false);
   const [value, setValue] = React.useState(defaultValue || '');
   const [search, setSearch] = React.useState(defaultValue || '');
   const [suggestions, setSuggestions] = React.useState<Suggestion[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
   const debouncedSearch = useDebounce(search, 500);
 
-  const fallbackImage = PlaceHolderImages.find(
-    (img) => img.id === 'food-suggestion-fallback'
-  );
+  const fallbackImage = 'https://picsum.photos/seed/food-fallback/100/100';
 
   React.useEffect(() => {
     if (debouncedSearch && debouncedSearch.length > 2) {
@@ -68,42 +63,30 @@ export function FoodSearchCombobox({
   const handleSelect = (currentValue: string) => {
     const newValue = currentValue === value ? '' : currentValue;
     setValue(newValue);
-    setSearch(newValue);
+    setSearch(newValue); // Also update search input to reflect selection
     onSelect(newValue);
     setOpen(false);
   };
-  
-  const handleOpenChange = (isOpen: boolean) => {
-      setOpen(isOpen);
-      if(!isOpen && onCancel) {
-          onCancel();
-      }
-  }
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
-      <div className="flex items-center w-full gap-2">
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="w-full justify-between"
-            onClick={() => setOpen(prev => !prev)}
-          >
-            <span className="truncate">{search ? search : 'Select food...'}</span>
-            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        {onCancel && <Button size="icon" variant="ghost" onClick={onCancel} className="h-8 w-8 shrink-0"><X className="h-4 w-4" /></Button>}
-      </div>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between"
+        >
+          <span className="truncate">{value ? value : 'Select food...'}</span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0">
         <Command shouldFilter={false}>
           <CommandInput
             placeholder="Search for Indian food..."
             value={search}
             onValueChange={setSearch}
-            
           />
           <CommandList>
             {isLoading && (
@@ -141,7 +124,7 @@ export function FoodSearchCombobox({
                   />
                   <div className="flex items-center gap-2">
                     <Image
-                      src={suggestion.imageUrl || fallbackImage?.imageUrl || ''}
+                      src={suggestion.imageUrl || fallbackImage}
                       alt={suggestion.name}
                       width={24}
                       height={24}
@@ -158,4 +141,3 @@ export function FoodSearchCombobox({
     </Popover>
   );
 }
-    

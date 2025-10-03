@@ -315,13 +315,14 @@ export function HealthifySnap({
                 className="flex items-center justify-between text-sm"
               >
                 {isEditing === item.id ? (
-                  <FoodSearchCombobox
-                    defaultValue={item.name}
-                    onSelect={(value) => {
-                      handleUpdateItem(item.id, value);
-                    }}
-                    onCancel={() => setIsEditing(null)}
-                  />
+                  <div className="w-full">
+                    <FoodSearchCombobox
+                      defaultValue={item.name}
+                      onSelect={(value) => {
+                        handleUpdateItem(item.id, value);
+                      }}
+                    />
+                  </div>
                 ) : (
                   <>
                     <span className="flex-1">{item.name}</span>
@@ -350,13 +351,14 @@ export function HealthifySnap({
             ))}
             {isAdding && (
               <li className="flex gap-2">
-                <FoodSearchCombobox
-                  onSelect={(value) => {
-                    handleAddItem(value);
-                    setIsAdding(false);
-                  }}
-                  onCancel={() => setIsAdding(false)}
-                />
+                <div className="w-full">
+                  <FoodSearchCombobox
+                    onSelect={(value) => {
+                      handleAddItem(value);
+                      setIsAdding(false);
+                    }}
+                  />
+                </div>
                 <Button
                   size="icon"
                   variant="ghost"

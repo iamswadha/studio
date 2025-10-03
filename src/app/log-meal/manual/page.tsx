@@ -1,5 +1,4 @@
 'use client';
-import { AppShell } from '@/components/app-shell';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import {
@@ -28,7 +27,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Utensils, ArrowLeft } from 'lucide-react';
+import { Utensils, ArrowLeft, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import Link from 'next/link';
@@ -37,6 +36,9 @@ import { collection, Timestamp } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { MealTime } from '../layout';
 import { startOfDay } from 'date-fns';
+import { FoodSearchCombobox } from '@/components/food-search-combobox';
+import { getSingleItemNutrition } from '@/lib/actions';
+import { useState } from 'react';
 
 const mealSchema = z.object({
   mealTime: z.enum([
@@ -49,7 +51,7 @@ const mealSchema = z.object({
   foodName: z.string().min(2, 'Food name is required.'),
   calories: z.coerce.number().min(0, 'Calories must be a positive number.'),
   protein: z.coerce.number().min(0, 'Protein must be a positive number.'),
-  carbs: z.coerce.number().min(0, 'Carbs must be a positive number.'),
+  carbs: z.coerce.number().min(0, 'Carbohydrates must be a positive number.'),
   fat: z.coerce.number().min(0, 'Fat must be a positive number.'),
 });
 
@@ -60,6 +62,7 @@ export default function ManualLogMealPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dateParam = searchParams.get('date');
+  const [isFetchingNutrition, setIsFetchingNutrition] = useState(false);
 
   const form = useForm<z.infer<typeof mealSchema>>({
     resolver: zodResolver(mealSchema),
@@ -73,6 +76,29 @@ export default function ManualLogMealPage() {
     },
   });
 
+  const handleFoodSelect = async (foodName: string) => {
+    form.setValue('foodName', foodName);
+    setIsFetchingNutrition(true);
+    const nutrition = await getSingleItemNutrition({ foodItemName: foodName });
+    if (nutrition.success && nutrition.data) {
+      form.setValue('calories', nutrition.data.calories);
+      form.setValue('protein', nutrition.data.protein);
+      form.setValue('carbs', nutrition.data.carbohydrates);
+      form.setValue('fat', nutrition.data.fat);
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Could not fetch nutrition data for this item.',
+      });
+      form.setValue('calories', 0);
+      form.setValue('protein', 0);
+      form.setValue('carbs', 0);
+      form.setValue('fat', 0);
+    }
+    setIsFetchingNutrition(false);
+  };
+
   function onSubmit(values: z.infer<typeof mealSchema>) {
     if (!user) {
       toast({
@@ -82,10 +108,8 @@ export default function ManualLogMealPage() {
       });
       return;
     }
-    
+
     const selectedDate = dateParam ? new Date(dateParam) : new Date();
-    // We adjust the timestamp to be the start of the day of the selected date.
-    // Firestore will handle server-side timestamping if we pass a Date object.
     const mealTimestamp = startOfDay(selectedDate);
 
     const newMeal = {
@@ -122,7 +146,7 @@ export default function ManualLogMealPage() {
 
   return (
     <>
-      <PageHeader title="Log a Meal Manually">
+      <PageHeader title="Log a Meal">
         <Button variant="outline" asChild>
           <Link href="/log-meal">
             <ArrowLeft className="mr-2 h-4 w-4" />
@@ -135,7 +159,8 @@ export default function ManualLogMealPage() {
         <CardHeader>
           <CardTitle>Meal Details</CardTitle>
           <CardDescription>
-            Enter the details of the meal you consumed.
+            Search for a food and we'll estimate the nutritional information for
+            you.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -176,23 +201,28 @@ export default function ManualLogMealPage() {
               <FormField
                 control={form.control}
                 name="foodName"
-                render={({ field }) => (
+                render={() => (
                   <FormItem>
                     <FormLabel>Food / Meal Name</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="e.g., Grilled Chicken Salad"
-                        {...field}
+                      <FoodSearchCombobox
+                        onSelect={handleFoodSelect}
+                        defaultValue={form.getValues('foodName')}
                       />
                     </FormControl>
                     <FormDescription>
-                      You can log a single food item here.
+                      Search for an Indian food item to get started.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
+              {isFetchingNutrition && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Fetching nutrition details...</span>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -201,12 +231,7 @@ export default function ManualLogMealPage() {
                     <FormItem>
                       <FormLabel>Calories (kcal)</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="e.g., 450"
-                          {...field}
-                          value={field.value ?? ''}
-                        />
+                        <Input type="number" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -219,12 +244,7 @@ export default function ManualLogMealPage() {
                     <FormItem>
                       <FormLabel>Protein (g)</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="e.g., 30"
-                          {...field}
-                          value={field.value ?? ''}
-                        />
+                        <Input type="number" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -237,12 +257,7 @@ export default function ManualLogMealPage() {
                     <FormItem>
                       <FormLabel>Carbohydrates (g)</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="e.g., 20"
-                          {...field}
-                          value={field.value ?? ''}
-                        />
+                        <Input type="number" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -255,12 +270,7 @@ export default function ManualLogMealPage() {
                     <FormItem>
                       <FormLabel>Fat (g)</FormLabel>
                       <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="e.g., 15"
-                          {...field}
-                          value={field.value ?? ''}
-                        />
+                        <Input type="number" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
