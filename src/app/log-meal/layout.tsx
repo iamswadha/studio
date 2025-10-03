@@ -25,7 +25,14 @@ import {
   useCollection,
   useMemoFirebase,
 } from '@/firebase';
-import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import {
+  collection,
+  serverTimestamp,
+  query,
+  orderBy,
+  where,
+  Timestamp,
+} from 'firebase/firestore';
 
 type FoodItem = {
   id: number;
@@ -74,8 +81,15 @@ export default function LogMealLayout({
 
   const mealsQuery = useMemoFirebase(() => {
     if (!user) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
     return query(
       collection(firestore, 'users', user.uid, 'meals'),
+      where('timestamp', '>=', Timestamp.fromDate(today)),
+      where('timestamp', '<', Timestamp.fromDate(tomorrow)),
       orderBy('timestamp', 'desc')
     );
   }, [firestore, user]);
