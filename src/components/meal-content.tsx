@@ -43,24 +43,43 @@ export const MealContent = ({ mealTime, items }: { mealTime: string, items: Food
     <Card>
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
-          <span>{Math.round(totalCals)} Cal</span>
-          <div className="flex gap-2">
-            <Button asChild variant="outline">
-              <Link href="/log-meal/manual">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Food
-              </Link>
-            </Button>
-            <Button asChild>
-              <Link href="/log-meal/healthify-snap">
-                <Camera className="mr-2 h-4 w-4" /> Snap Meal
-              </Link>
-            </Button>
-          </div>
+            {items.length > 0 && (
+                <>
+                <span>{Math.round(totalCals)} Cal</span>
+                <div className="flex gap-2">
+                    <Button asChild variant="outline">
+                    <Link href="/log-meal/manual">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Food
+                    </Link>
+                    </Button>
+                    <Button asChild>
+                    <Link href="/log-meal/healthify-snap">
+                        <Camera className="mr-2 h-4 w-4" /> Snap Meal
+                    </Link>
+                    </Button>
+                </div>
+                </>
+            )}
         </CardTitle>
       </CardHeader>
       <CardContent>
         {items.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
+          <div className="text-center text-muted-foreground py-8 space-y-4">
+             <div className="flex justify-between items-center">
+                <span className="text-2xl font-bold text-foreground">{Math.round(totalCals)} Cal</span>
+                <div className="flex gap-2">
+                    <Button asChild variant="outline">
+                    <Link href="/log-meal/manual">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Food
+                    </Link>
+                    </Button>
+                    <Button asChild>
+                    <Link href="/log-meal/healthify-snap">
+                        <Camera className="mr-2 h-4 w-4" /> Snap Meal
+                    </Link>
+                    </Button>
+                </div>
+            </div>
             <p>No food logged for this meal yet.</p>
           </div>
         ) : (
