@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader2, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -99,8 +99,20 @@ export function FoodSearchCombobox({
                 <Loader2 className="h-6 w-6 animate-spin" />
               </div>
             )}
-            {!isLoading && debouncedSearch.length > 2 && suggestions.length === 0 && (
-              <CommandEmpty>No food found.</CommandEmpty>
+            {!isLoading && debouncedSearch.length > 2 && (
+              <CommandEmpty>
+                <div className="py-4 text-center text-sm">
+                  <p>No food found.</p>
+                  <Button
+                    variant="link"
+                    className="mt-2"
+                    onClick={() => handleSelect(debouncedSearch)}
+                  >
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add "{debouncedSearch}" as new item
+                  </Button>
+                </div>
+              </CommandEmpty>
             )}
             <CommandGroup>
               {suggestions.map((suggestion) => (
