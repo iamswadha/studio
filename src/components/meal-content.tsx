@@ -8,13 +8,19 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Camera, Pencil, Trash2 } from 'lucide-react';
+import { PlusCircle, Camera, Pencil, Trash2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Separator } from './ui/separator';
-import type { LoggedMeal, FoodItem } from '@/app/log-meal/layout';
-import { useFirestore, useUser, deleteDocumentNonBlocking } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import type { LoggedMeal, MealTime } from '@/app/log-meal/layout';
+import { useFirestore, useUser, deleteDocumentNonBlocking, addDocumentNonBlocking } from '@/firebase';
+import { doc, collection, Timestamp } from 'firebase/firestore';
+import { FoodSearchCombobox } from './food-search-combobox';
+import { getSingleItemNutrition } from '@/lib/actions';
+import { useState } from 'react';
+import { startOfDay } from 'date-fns';
+import { useToast } from '@/hooks/use-toast';
+
 
 const suggestions = [
   {
@@ -31,17 +37,75 @@ const suggestions = [
   },
 ];
 
-export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: string, loggedMeals: LoggedMeal[], currentDate: Date }) => {
+export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: MealTime, loggedMeals: LoggedMeal[], currentDate: Date }) => {
   const totalCals = loggedMeals.reduce((sum, meal) => sum + meal.totalNutrition.calories, 0);
   const { user } = useUser();
   const firestore = useFirestore();
   const dateParam = currentDate.toISOString();
+  const { toast } = useToast();
+  const [isAddingFood, setIsAddingFood] = useState(false);
 
   const handleDeleteMeal = (mealId: string) => {
     if (!user) return;
     const mealDocRef = doc(firestore, 'users', user.uid, 'meals', mealId);
     deleteDocumentNonBlocking(mealDocRef);
   };
+
+  const handleAddFood = async (foodName: string) => {
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Not logged in',
+        description: 'You must be logged in to log a meal.',
+      });
+      return;
+    }
+    setIsAddingFood(true);
+    
+    const nutrition = await getSingleItemNutrition({ foodItemName: foodName });
+    if (!nutrition.success || !nutrition.data) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Could not fetch nutrition data for this item.',
+        });
+        setIsAddingFood(false);
+        return;
+    }
+
+    const mealTimestamp = startOfDay(currentDate);
+
+    const newMeal = {
+      mealTime: mealTime,
+      items: [
+        {
+          id: Date.now(),
+          name: foodName,
+          calories: nutrition.data.calories,
+          protein: nutrition.data.protein,
+          carbohydrates: nutrition.data.carbohydrates,
+          fat: nutrition.data.fat,
+        },
+      ],
+      totalNutrition: {
+        calories: nutrition.data.calories,
+        protein: nutrition.data.protein,
+        carbohydrates: nutrition.data.carbohydrates,
+        fat: nutrition.data.fat,
+      },
+      userId: user.uid,
+      timestamp: Timestamp.fromDate(mealTimestamp),
+    };
+
+    const mealsCol = collection(firestore, 'users', user.uid, 'meals');
+    addDocumentNonBlocking(mealsCol, newMeal);
+    
+    toast({
+      title: 'Meal Logged!',
+      description: `${foodName} has been added to your ${mealTime} log.`,
+    });
+    setIsAddingFood(false);
+  }
 
 
   return (
@@ -56,11 +120,13 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
           <div className="text-center text-muted-foreground py-8 space-y-4">
             <p className="text-4xl font-bold">{Math.round(totalCals)} <span className="text-lg text-muted-foreground">Cal</span></p>
              <div className="flex justify-center items-center gap-4">
-                <Button asChild variant="outline">
-                <Link href={`/log-meal/manual?date=${dateParam}`}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Food
-                </Link>
-                </Button>
+                <div className='max-w-xs w-full'>
+                    {isAddingFood ? (
+                        <div className='flex items-center justify-center gap-2'><Loader2 className="h-4 w-4 animate-spin" /> Adding...</div>
+                    ): (
+                        <FoodSearchCombobox onSelect={handleAddFood} />
+                    )}
+                </div>
                 <Button asChild>
                 <Link href={`/log-meal/healthify-snap?date=${dateParam}`}>
                     <Camera className="mr-2 h-4 w-4" /> Snap Meal
@@ -74,11 +140,13 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
              <div className="flex justify-between items-center mb-4">
                 <p className="text-2xl font-bold">{Math.round(totalCals)} <span className="text-lg text-muted-foreground">Cal</span></p>
                 <div className="flex items-center gap-2">
-                    <Button asChild variant="outline" size="sm">
-                    <Link href={`/log-meal/manual?date=${dateParam}`}>
-                        <PlusCircle className="mr-2 h-4 w-4" /> Add Food
-                    </Link>
-                    </Button>
+                    <div className='max-w-xs w-full'>
+                         {isAddingFood ? (
+                            <div className='flex items-center justify-center gap-2'><Loader2 className="h-4 w-4 animate-spin" /> Adding...</div>
+                        ): (
+                            <FoodSearchCombobox onSelect={handleAddFood} />
+                        )}
+                    </div>
                     <Button asChild size="sm">
                     <Link href={`/log-meal/healthify-snap?date=${dateParam}`}>
                         <Camera className="mr-2 h-4 w-4" /> Snap Meal

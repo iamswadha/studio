@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Camera, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Camera, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { MealContent } from '@/components/meal-content';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -137,7 +137,7 @@ export default function LogMealLayout({
   ];
 
   const activeTabValue = pathname.split('/').pop();
-  const isDedicatedPage = ['manual', 'healthify-snap'].includes(
+  const isDedicatedPage = ['healthify-snap'].includes(
     activeTabValue ?? ''
   );
 
@@ -178,11 +178,6 @@ export default function LogMealLayout({
                 <ScrollBar orientation="horizontal" />
               </ScrollArea>
               <div className="flex gap-2 ml-2 shrink-0">
-                <Button variant="outline" asChild>
-                  <Link href={`/log-meal/manual?date=${dateParam}`}>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Food
-                  </Link>
-                </Button>
                  <Button asChild>
                   <Link href={`/log-meal/healthify-snap?date=${dateParam}`}>
                     <Camera className="mr-2 h-4 w-4" /> Snap Meal
