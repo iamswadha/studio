@@ -159,8 +159,8 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
               <div key={meal.id}>
                 <Separator />
                 <div className="flex flex-col sm:flex-row justify-between items-start pt-6 gap-4">
-                    <div className="flex-grow flex flex-col md:flex-row items-start gap-4">
-                        <div className="w-full md:w-1/3 flex-shrink-0">
+                    <div className="flex-grow flex flex-col md:flex-row items-start gap-4 w-full">
+                        <div className="w-full md:w-40 flex-shrink-0">
                         {meal.imageUrl && (
                             <Image
                             src={meal.imageUrl}
@@ -171,7 +171,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
                             />
                         )}
                         </div>
-                        <div className='w-full md:w-2/3 space-y-3'>
+                        <div className='w-full space-y-3'>
                             {meal.items.map(item => (
                                 <div key={item.id} className="grid grid-cols-[1fr_auto] items-center gap-2">
                                     <div>
