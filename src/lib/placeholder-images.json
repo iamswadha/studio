@@ -29,6 +29,12 @@
       "description": "A placeholder image of a breakfast meal.",
       "imageUrl": "https://images.unsplash.com/photo-1628556820645-63ba5f90e6a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxhdm9jYWRvJTIwdG9hc3R8ZW58MHx8fHwxNzU5Mzk3MDUwfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "avocado toast"
+    },
+    {
+      "id": "food-suggestion-fallback",
+      "description": "A fallback image for food suggestions when an image is not provided.",
+      "imageUrl": "https://images.unsplash.com/photo-1577106294342-28681d33ca82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxmb29kJTIwcGxhdGUlMjBwbGF0ZXxlbnwwfHx8fDE3NjAxMTc0MTZ8MA&ixlib=rb-4.0.3&q=80&w=1080",
+      "imageHint": "food plate"
     }
   ]
 }

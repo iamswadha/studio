@@ -32,6 +32,7 @@ import {
 import Image from 'next/image';
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Separator } from '@/components/ui/separator';
+import { FoodSearchCombobox } from '@/components/food-search-combobox';
 
 type FoodItem = {
   id: number;
@@ -49,7 +50,6 @@ export default function HealthifySnapPage() {
   const [isEditing, setIsEditing] = useState<number | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-  const [addingValue, setAddingValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   let nextId = useRef(0);
@@ -164,55 +164,56 @@ export default function HealthifySnapPage() {
     setEditingValue(value);
   };
 
-  const handleUpdateItem = useCallback(async (id: number) => {
-    if (editingValue.trim() === '') return;
+  const handleUpdateItem = useCallback(async (id: number, newName: string) => {
+    if (newName.trim() === '') return;
 
-    // Optimistically update the UI
-    const originalItems = foodItems;
-    const newItems = foodItems.map((item) =>
-      item.id === id ? { ...item, name: editingValue } : item
-    );
-    setFoodItems(newItems);
     setIsEditing(null);
     setEditingValue('');
 
     // Fetch new nutrition data
     const nutrition = await getSingleItemNutrition({
-      foodItemName: editingValue,
+      foodItemName: newName,
     });
 
     if (nutrition.success && nutrition.data) {
       setFoodItems((currentItems) =>
         currentItems.map((item) =>
           item.id === id
-            ? { ...item, name: editingValue, ...nutrition.data }
+            ? { ...item, name: newName, ...nutrition.data }
             : item
         )
       );
     } else {
-      // Revert if API call fails
-      setFoodItems(originalItems);
       toast({
         variant: 'destructive',
         title: 'Could not fetch nutrition data',
       });
+      // Revert optimistic update on failure
+      const originalItem = foodItems.find(item => item.id === id);
+       if (originalItem) {
+          setFoodItems((currentItems) =>
+            currentItems.map((item) =>
+              item.id === id
+                ? { ...item, name: originalItem.name }
+                : item
+            )
+          );
+       }
     }
-  }, [editingValue, foodItems]);
+  }, [foodItems]);
 
 
-  const handleAddItem = async () => {
-    if (addingValue.trim() === '') return;
+  const handleAddItem = async (itemName: string) => {
+    if (itemName.trim() === '') return;
     
-    const newItemName = addingValue;
     setIsAdding(false);
-    setAddingValue('');
 
     const nutrition = await getSingleItemNutrition({
-      foodItemName: newItemName,
+      foodItemName: itemName,
     });
     if (nutrition.success && nutrition.data) {
       const newId = nextId.current++;
-      setFoodItems([...foodItems, { id: newId, name: newItemName, ...nutrition.data }]);
+      setFoodItems([...foodItems, { id: newId, name: itemName, ...nutrition.data }]);
     } else {
       toast({
         variant: 'destructive',
@@ -269,31 +270,12 @@ export default function HealthifySnapPage() {
                 className="flex items-center justify-between text-sm"
               >
                 {isEditing === item.id ? (
-                  <div className="flex-1 flex gap-2">
-                    <Input
-                      value={editingValue}
-                      onChange={(e) => setEditingValue(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleUpdateItem(item.id)}
-                      className="h-8"
-                      autoFocus
+                   <FoodSearchCombobox
+                      defaultValue={item.name}
+                      onSelect={(value) => {
+                        handleUpdateItem(item.id, value);
+                      }}
                     />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8"
-                      onClick={() => handleUpdateItem(item.id)}
-                    >
-                      <Check className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8"
-                      onClick={() => setIsEditing(null)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
                 ) : (
                   <>
                     <span className="flex-1">{item.name}</span>
@@ -321,31 +303,21 @@ export default function HealthifySnapPage() {
               </li>
             ))}
             {isAdding && (
-              <li className="flex gap-2">
-                <Input
-                  value={addingValue}
-                  onChange={(e) => setAddingValue(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
-                  placeholder="New item name"
-                  className="h-8"
-                  autoFocus
+               <li className="flex gap-2">
+                <FoodSearchCombobox
+                  onSelect={(value) => {
+                    handleAddItem(value);
+                    setIsAdding(false);
+                  }}
                 />
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8"
-                  onClick={handleAddItem}
-                >
-                  <Check className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-8 w-8"
-                  onClick={() => setIsAdding(false)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                 <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-8 w-8"
+                    onClick={() => setIsAdding(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
               </li>
             )}
           </ul>

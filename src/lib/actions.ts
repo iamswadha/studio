@@ -8,6 +8,10 @@ import {
   getFoodItemNutrition,
   type FoodItemNutritionInput,
 } from '@/ai/flows/get-food-item-nutrition';
+import {
+  getIndianFoodSuggestions,
+  type IndianFoodSuggestionsInput,
+} from '@/ai/flows/get-indian-food-suggestions';
 
 export async function getMealAnalysis(input: LogMealsWithHealthifySnapInput) {
   try {
@@ -33,6 +37,19 @@ export async function getSingleItemNutrition(input: FoodItemNutritionInput) {
       success: false,
       error:
         'Failed to get nutrition data. The AI model might be unavailable. Please try again later.',
+    };
+  }
+}
+
+export async function getFoodSuggestions(input: IndianFoodSuggestionsInput) {
+  try {
+    const result = await getIndianFoodSuggestions(input);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Error in getFoodSuggestions:', error);
+    return {
+      success: false,
+      error: 'Failed to get food suggestions. The AI model might be unavailable. Please try again later.',
     };
   }
 }
