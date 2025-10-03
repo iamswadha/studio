@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Camera, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { MealContent } from '@/components/meal-content';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
@@ -23,8 +23,7 @@ import {
   where,
   Timestamp,
 } from 'firebase/firestore';
-import { format, startOfDay, endOfDay, addDays, isToday, isYesterday, eachDayOfInterval, isSameDay } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { format, startOfDay, endOfDay, addDays, isToday, isYesterday } from 'date-fns';
 
 export type FoodItem = {
   id: number;
@@ -59,44 +58,6 @@ export type MealTime =
 export type MealData = {
   [key in MealTime]: LoggedMeal[];
 };
-
-
-const DateScroller = ({ selectedDate, onDateSelect }: { selectedDate: Date, onDateSelect: (date: Date) => void }) => {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const dates = eachDayOfInterval({
-    start: addDays(new Date(), -7),
-    end: addDays(new Date(), 7),
-  });
-
-  useEffect(() => {
-    const selectedButton = (scrollContainerRef.current?.querySelector(`[data-date="${format(selectedDate, 'yyyy-MM-dd')}"]`)) as HTMLElement;
-    if (selectedButton) {
-      selectedButton.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-    }
-  }, [selectedDate]);
-
-
-  return (
-    <ScrollArea className="w-full whitespace-nowrap rounded-md" ref={scrollContainerRef}>
-      <div className="flex w-max space-x-2 p-2">
-        {dates.map((date) => (
-          <Button
-            key={date.toString()}
-            variant={isSameDay(date, selectedDate) ? 'default' : 'outline'}
-            className={cn("flex flex-col h-16 w-16", isSameDay(date, selectedDate) && "bg-primary text-primary-foreground")}
-            onClick={() => onDateSelect(date)}
-            data-date={format(date, 'yyyy-MM-dd')}
-          >
-            <span className="text-xs">{format(date, 'EEE')}</span>
-            <span className="text-xl font-bold">{format(date, 'd')}</span>
-          </Button>
-        ))}
-      </div>
-      <ScrollBar orientation="horizontal" />
-    </ScrollArea>
-  );
-};
-
 
 export default function LogMealLayout({
   children,
@@ -184,13 +145,19 @@ export default function LogMealLayout({
     <AppShell>
       <div className="flex flex-col gap-8">
         {!isDedicatedPage && (
-          <>
           <PageHeader
             title={getPageTitle()}
             description="Log your meals to get AI-powered insights and recommendations."
-          />
-          <DateScroller selectedDate={currentDate} onDateSelect={setCurrentDate} />
-          </>
+          >
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="icon" onClick={() => setCurrentDate(addDays(currentDate, -1))}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" onClick={() => setCurrentDate(addDays(currentDate, 1))}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </PageHeader>
         )}
 
         {isDedicatedPage ? (
