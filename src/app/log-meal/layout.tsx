@@ -19,8 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useFirestore, useUser, addDocumentNonBlocking } from '@/firebase';
-import { useCollection, useMemoFirebase } from '@/firebase/firestore/use-collection';
+import { useFirestore, useUser, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import {
   collection,
   serverTimestamp,
