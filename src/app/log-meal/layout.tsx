@@ -24,6 +24,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { format, startOfDay, endOfDay, addDays, isToday, isYesterday } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export type FoodItem = {
   id: number;
@@ -68,10 +69,15 @@ export default function LogMealLayout({
   const router = useRouter();
   const { user } = useUser();
   const firestore = useFirestore();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    // Initialize date on the client to avoid hydration mismatch
+    setCurrentDate(new Date());
+  }, []);
 
   const mealsQuery = useMemoFirebase(() => {
-    if (!user) return null;
+    if (!user || !currentDate) return null;
 
     const start = startOfDay(currentDate);
     const end = endOfDay(currentDate);
@@ -122,6 +128,7 @@ export default function LogMealLayout({
   }, [mealsFromDb]);
   
   const getPageTitle = () => {
+    if(!currentDate) return "Loading...";
     if(isToday(currentDate)) return "Today's Insights";
     if(isYesterday(currentDate)) return "Yesterday's Insights";
     if(currentDate > new Date() && !isToday(currentDate)) return `Plans for ${format(currentDate, 'MMMM d')}`;
@@ -141,7 +148,24 @@ export default function LogMealLayout({
     activeTabValue ?? ''
   );
 
-  const dateParam = currentDate.toISOString();
+  const dateParam = currentDate ? currentDate.toISOString() : '';
+
+  if (!currentDate) {
+    return (
+      <AppShell>
+        <div className="flex flex-col gap-8">
+          <PageHeader title="Loading..." description="Getting things ready for you.">
+             <div className="flex items-center gap-2">
+              <Skeleton className="h-10 w-10" />
+              <Skeleton className="h-10 w-10" />
+            </div>
+          </PageHeader>
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-[400px] w-full" />
+        </div>
+      </AppShell>
+    )
+  }
 
   return (
     <AppShell>
