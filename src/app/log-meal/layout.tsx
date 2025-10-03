@@ -6,20 +6,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import { HealthifySnap } from '@/components/healthify-snap';
+import { PlusCircle, Camera } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
 import { MealContent } from '@/components/meal-content';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { useFirestore, useUser, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
 import {
   collection,
   serverTimestamp,
@@ -70,7 +61,6 @@ export default function LogMealLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const isMobile = useIsMobile();
   const { user } = useUser();
   const firestore = useFirestore();
 
@@ -136,56 +126,29 @@ export default function LogMealLayout({
   
   const pageTabs = [
     { value: 'healthify-snap', label: 'HealthifySnap', href: '/log-meal/healthify-snap'},
-  ]
+  ];
 
-  const activeTabValue = pathname.split('/').pop() || 'breakfast';
-
-  const handleLogMeal = (meal: {
-    mealTime: MealTime;
-    items: FoodItem[];
-    totalNutrition: any;
-    imageUrl?: string;
-  }) => {
-    if (!user || !meal.mealTime) return;
-
-    const mealToLog = {
-      ...meal,
-      userId: user.uid,
-      timestamp: serverTimestamp(),
-    };
-
-    const mealsCol = collection(firestore, 'users', user.uid, 'meals');
-    addDocumentNonBlocking(mealsCol, mealToLog);
-
-    // After logging, switch to that meal's tab
-    router.push(`/log-meal`);
-    // The default tab will be 'breakfast' but the Tabs component will manage its own state
-  };
-
-  const handleTabChange = (value: string) => {
-    // For tabs that are pages, navigate.
-    if(pageTabs.some(t => t.value === value)) {
-      router.push(`/log-meal/${value}`);
-    }
-    // For meal tabs, the Tabs component handles the state change itself.
-  };
-
+  const activeTabValue = pathname.split('/').pop();
+  
   // Determine if the current page is a dedicated tab page like 'manual' or 'healthify-snap'
-  const isPageTab = ['manual', 'healthify-snap'].includes(activeTabValue);
+  const isDedicatedPage = ['manual', 'healthify-snap'].includes(activeTabValue ?? '');
+
 
   return (
     <AppShell>
       <div className="flex flex-col gap-8">
-        <PageHeader
-          title="Today's Insights"
-          description="Log your meals to get AI-powered insights and recommendations."
-        />
-        {isPageTab ? (
-          // Render only the children for dedicated pages (manual, healthify-snap)
+        {!isDedicatedPage && (
+            <PageHeader
+                title="Today's Insights"
+                description="Log your meals to get AI-powered insights and recommendations."
+            />
+        )}
+        
+        {isDedicatedPage ? (
           children
         ) : (
           <Tabs defaultValue="breakfast" className="w-full">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-4">
                 <ScrollArea className="w-full whitespace-nowrap">
                   <TabsList className="inline-flex">
                     {mealTabs.map((meal) => (
@@ -216,7 +179,6 @@ export default function LogMealLayout({
                   />
               </TabsContent>
             ))}
-            {/* The content for page tabs like healthify-snap is handled by their own page.tsx files */}
           </Tabs>
         )}
       </div>
