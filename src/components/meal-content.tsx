@@ -13,7 +13,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Separator } from './ui/separator';
 import type { LoggedMeal, FoodItem } from '@/app/log-meal/layout';
-import { useFirestore, useUser, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
+import { useFirestore, useUser, deleteDocumentNonBlocking } from '@/firebase';
 import { doc } from 'firebase/firestore';
 
 const suggestions = [
@@ -36,39 +36,12 @@ export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, logge
   const { user } = useUser();
   const firestore = useFirestore();
 
-  const handleUpdateMeal = (meal: LoggedMeal, updatedItems: FoodItem[]) => {
+  const handleDeleteMeal = (mealId: string) => {
     if (!user) return;
-
-    const mealDocRef = doc(firestore, 'users', user.uid, 'meals', meal.id);
-
-    if (updatedItems.length === 0) {
-      deleteDocumentNonBlocking(mealDocRef);
-    } else {
-      const newTotalNutrition = updatedItems.reduce(
-        (acc, item) => ({
-          calories: acc.calories + item.calories,
-          protein: acc.protein + item.protein,
-          carbohydrates: acc.carbohydrates + item.carbohydrates,
-          fat: acc.fat + item.fat,
-        }),
-        { calories: 0, protein: 0, carbohydrates: 0, fat: 0 }
-      );
-
-      const updatedMeal = {
-        ...meal,
-        items: updatedItems,
-        totalNutrition: newTotalNutrition,
-      };
-      // We pass the new data to the update function. Note that 'id' is not part of the Firestore document fields.
-      const { id, ...mealDataToUpdate } = updatedMeal;
-      updateDocumentNonBlocking(mealDocRef, mealDataToUpdate);
-    }
+    const mealDocRef = doc(firestore, 'users', user.uid, 'meals', mealId);
+    deleteDocumentNonBlocking(mealDocRef);
   };
 
-  const handleRemoveItem = (meal: LoggedMeal, itemId: number) => {
-    const updatedItems = meal.items.filter((item) => item.id !== itemId);
-    handleUpdateMeal(meal, updatedItems);
-  };
 
   return (
     <Card>
@@ -115,49 +88,51 @@ export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, logge
             {loggedMeals.map((meal) => (
               <div key={meal.id}>
                 <Separator />
-                <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4 pt-6">
-                    <div className="col-span-1">
-                      {meal.imageUrl && (
-                        <Image
-                          src={meal.imageUrl}
-                          alt="Logged meal"
-                          width={150}
-                          height={150}
-                          className="rounded-lg object-cover aspect-square"
-                        />
-                      )}
-                    </div>
-                    <div className='col-span-2 space-y-3'>
-                        {meal.items.map(item => (
-                            <div key={item.id} className="grid grid-cols-[1fr_auto_auto] items-center gap-2">
-                                <div>
-                                    <p className="font-bold">{item.name}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                        {Math.round(item.protein)}g P, {Math.round(item.carbohydrates)}g C, {Math.round(item.fat)}g F
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="font-bold">{Math.round(item.calories)} Cal</p>
-                                </div>
-                                <div className="flex items-center">
-                                    <Button size="icon" variant="ghost" className="h-6 w-6" disabled>
-                                        <Pencil className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      className="h-6 w-6 text-destructive"
-                                      onClick={() => handleRemoveItem(meal, item.id)}
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
-                        ))}
-                        <Separator />
-                         <div className="text-right font-bold">
-                            Total: {Math.round(meal.totalNutrition.calories)} Cal
+                <div className="flex justify-between items-start pt-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4 flex-grow">
+                        <div className="col-span-1">
+                        {meal.imageUrl && (
+                            <Image
+                            src={meal.imageUrl}
+                            alt="Logged meal"
+                            width={150}
+                            height={150}
+                            className="rounded-lg object-cover aspect-square"
+                            />
+                        )}
                         </div>
+                        <div className='col-span-2 space-y-3'>
+                            {meal.items.map(item => (
+                                <div key={item.id} className="grid grid-cols-[1fr_auto] items-center gap-2">
+                                    <div>
+                                        <p className="font-bold">{item.name}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {Math.round(item.protein)}g P, {Math.round(item.carbohydrates)}g C, {Math.round(item.fat)}g F
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-bold">{Math.round(item.calories)} Cal</p>
+                                    </div>
+                                </div>
+                            ))}
+                            <Separator />
+                            <div className="text-right font-bold">
+                                Total: {Math.round(meal.totalNutrition.calories)} Cal
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-col ml-2">
+                        <Button size="icon" variant="ghost" className="h-8 w-8" disabled>
+                            <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8 text-destructive"
+                            onClick={() => handleDeleteMeal(meal.id)}
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
                     </div>
                 </div>
               </div>
