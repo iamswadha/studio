@@ -33,7 +33,7 @@ export default function LogMealLayout({
           description="Log your meals to get AI-powered insights and recommendations."
         />
 
-        <Tabs defaultValue={activeTab} className="w-full">
+        <Tabs value={activeTab} className="w-full">
           <TabsList className="grid w-full grid-cols-5">
             {mealTimes.map(meal => (
                 <TabsTrigger key={meal.value} value={meal.value} asChild>
@@ -41,11 +41,7 @@ export default function LogMealLayout({
                 </TabsTrigger>
             ))}
           </TabsList>
-            <TabsContent value="breakfast">{children}</TabsContent>
-            <TabsContent value="morningSnack">{children}</TabsContent>
-            <TabsContent value="lunch">{children}</TabsContent>
-            <TabsContent value="eveningSnack">{children}</TabsContent>
-            <TabsContent value="dinner">{children}</TabsContent>
+            <TabsContent value={activeTab}>{children}</TabsContent>
         </Tabs>
       </div>
     </AppShell>
