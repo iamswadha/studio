@@ -35,6 +35,13 @@ import Link from 'next/link';
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { FoodSearchCombobox } from '@/components/food-search-combobox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 type FoodItem = {
   id: number;
@@ -45,6 +52,8 @@ type FoodItem = {
   fat: number;
 };
 
+type MealTime = 'breakfast' | 'morningSnack' | 'lunch' | 'eveningSnack' | 'dinner';
+
 export default function HealthifySnapPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
@@ -53,6 +62,7 @@ export default function HealthifySnapPage() {
   const [editingValue, setEditingValue] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mealTime, setMealTime] = useState<MealTime>('breakfast');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const nextId = useRef(0);
 
@@ -144,12 +154,25 @@ export default function HealthifySnapPage() {
 
   const handleLogMeal = () => {
     if (foodItems.length === 0) return;
+    // In a real app, this is where you'd save to a database.
+    // For now, we'll use localStorage to simulate this.
+    const mealToLog = {
+      items: foodItems,
+      totalNutrition,
+      loggedAt: new Date().toISOString(),
+    };
+    
+    // In a real app, you would send this to your backend.
+    // For this prototype, we are just using a toast.
+    console.log(`Logging meal for ${mealTime}:`, mealToLog);
+
     toast({
       title: 'Meal Logged!',
       description: `Successfully logged ${Math.round(
         totalNutrition.calories
-      )} kcal.`,
+      )} kcal for ${mealTime}.`,
     });
+
     setPreview(null);
     setFoodItems([]);
     if (fileInputRef.current) {
@@ -449,7 +472,25 @@ export default function HealthifySnapPage() {
               {foodItems.length > 0 && <AnalysisResults />}
             </CardContent>
             {foodItems.length > 0 && (
-              <CardFooter>
+              <CardFooter className="flex-col gap-4 items-stretch">
+                <div className="space-y-2">
+                  <Label htmlFor="meal-time">Log this meal as:</Label>
+                  <Select
+                    value={mealTime}
+                    onValueChange={(v) => setMealTime(v as MealTime)}
+                  >
+                    <SelectTrigger id="meal-time">
+                      <SelectValue placeholder="Select meal time" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="breakfast">Breakfast</SelectItem>
+                      <SelectItem value="morningSnack">Morning Snack</SelectItem>
+                      <SelectItem value="lunch">Lunch</SelectItem>
+                      <SelectItem value="eveningSnack">Evening Snack</SelectItem>
+                      <SelectItem value="dinner">Dinner</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button
                   onClick={handleLogMeal}
                   className="w-full"
