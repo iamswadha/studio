@@ -19,12 +19,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useFirestore, useUser } from '@/firebase';
-import {
-  addDocumentNonBlocking,
-  useCollection,
-  useMemoFirebase,
-} from '@/firebase';
+import { useFirestore, useUser, addDocumentNonBlocking } from '@/firebase';
+import { useCollection, useMemoFirebase } from '@/firebase/firestore/use-collection';
 import {
   collection,
   serverTimestamp,
@@ -119,6 +115,15 @@ export default function LogMealLayout({
         }
       });
       setLoggedMeals(newMealData);
+    } else {
+      // Clear meals if user logs out or there's no data
+      setLoggedMeals({
+        breakfast: [],
+        morningSnack: [],
+        lunch: [],
+        eveningSnack: [],
+        dinner: [],
+      });
     }
   }, [mealsFromDb]);
 
@@ -131,9 +136,7 @@ export default function LogMealLayout({
     { value: 'healthify-snap', label: 'HealthifySnap' },
   ];
 
-  const activeTab =
-    mealTimes.find((tab) => pathname.includes(tab.value))?.value ||
-    'morningSnack';
+  const activeTab = pathname.split('/').pop() || 'breakfast';
 
   const handleLogMeal = (meal: {
     mealTime: MealTime;
@@ -167,7 +170,7 @@ export default function LogMealLayout({
           description="Log your meals to get AI-powered insights and recommendations."
         />
 
-        <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <div className="flex justify-between items-center">
             {isMobile ? (
               <Select value={activeTab} onValueChange={handleTabChange}>
@@ -194,12 +197,13 @@ export default function LogMealLayout({
                 <ScrollBar orientation="horizontal" />
               </ScrollArea>
             )}
-            <Button variant="outline" asChild className="ml-2">
+            <Button variant="outline" asChild className="ml-2 shrink-0">
               <Link href="/log-meal/manual">
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Food
               </Link>
             </Button>
           </div>
+
           {mealTimes.map((meal) => (
             <TabsContent key={meal.value} value={meal.value} className="mt-4">
               {meal.value === 'healthify-snap' ? (
@@ -213,6 +217,8 @@ export default function LogMealLayout({
             </TabsContent>
           ))}
         </Tabs>
+         {/* This will render the content for /manual page */}
+        {activeTab === 'manual' && children}
       </div>
     </AppShell>
   );
