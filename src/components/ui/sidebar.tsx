@@ -179,7 +179,7 @@ const Sidebar = React.forwardRef<
 
     if (collapsible === "none") {
       return (
-        <div
+        <aside
           className={cn(
             "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
             className
@@ -188,7 +188,7 @@ const Sidebar = React.forwardRef<
           {...props}
         >
           {children}
-        </div>
+        </aside>
       )
     }
 
@@ -213,13 +213,14 @@ const Sidebar = React.forwardRef<
     }
 
     return (
-      <div
+      <aside
         ref={ref}
-        className="group peer hidden md:block text-sidebar-foreground"
+        className={cn("group peer hidden text-sidebar-foreground md:block", className)}
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
         data-side={side}
+        {...props}
       >
         {/* This is what handles the sidebar gap on desktop */}
         <div
@@ -242,9 +243,7 @@ const Sidebar = React.forwardRef<
             variant === "floating" || variant === "inset"
               ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)]"
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
-            className
           )}
-          {...props}
         >
           <div
             data-sidebar="sidebar"
@@ -253,7 +252,7 @@ const Sidebar = React.forwardRef<
             {children}
           </div>
         </div>
-      </div>
+      </aside>
     )
   }
 )
@@ -323,7 +322,7 @@ const SidebarInset = React.forwardRef<
       ref={ref}
       className={cn(
         "relative flex min-h-svh flex-1 flex-col bg-background",
-        "peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
+        "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:border md:peer-data-[variant=inset]:shadow",
         className
       )}
       {...props}
