@@ -1,0 +1,130 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import {
+  BarChart3,
+  Camera,
+  HeartPulse,
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  User,
+  UtensilsCrossed,
+} from 'lucide-react';
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
+import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/logo';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+
+const navItems = [
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/activity', icon: HeartPulse, label: 'Activity' },
+  { href: '/log-meal', icon: UtensilsCrossed, label: 'Log Meal' },
+  { href: '/healthify-snap', icon: Camera, label: 'HealthifySnap' },
+  { href: '/progress', icon: BarChart3, label: 'Progress' },
+];
+
+export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const userAvatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
+
+  return (
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader>
+          <div className="flex items-center justify-between">
+            <Logo />
+            <SidebarTrigger className="hidden md:flex" />
+          </div>
+        </SidebarHeader>
+        <SidebarContent>
+          <SidebarMenu>
+            {navItems.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <Link href={item.href} legacyBehavior passHref>
+                  <SidebarMenuButton
+                    isActive={pathname.startsWith(item.href)}
+                    tooltip={item.label}
+                  >
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarContent>
+        <SidebarFooter>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-3 p-2 h-auto"
+              >
+                <Avatar className="h-9 w-9">
+                  {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User avatar" />}
+                  <AvatarFallback>U</AvatarFallback>
+                </Avatar>
+                <div className="text-left group-data-[collapsible=icon]:hidden">
+                  <p className="font-medium text-sm">User</p>
+                  <p className="text-xs text-muted-foreground">
+                    user@example.com
+                  </p>
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="right" align="start" className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>Settings</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => router.push('/signup')}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset>
+        <header className="flex h-14 items-center gap-4 border-b bg-background/95 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
+          <SidebarTrigger className="flex md:hidden" />
+          <div className="flex-1">
+            {/* Can add breadcrumbs or page title here */}
+          </div>
+        </header>
+        <main className="flex-1 p-4 md:p-8">{children}</main>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
