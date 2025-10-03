@@ -26,7 +26,7 @@ export function PageHeader({
           {title}
         </h1>
         {description && (
-          <p className="max-w-2xl text-muted-foreground">{description}</p>
+          <p className="text-muted-foreground">{description}</p>
         )}
       </div>
       {children && <div className="flex shrink-0 gap-2">{children}</div>}

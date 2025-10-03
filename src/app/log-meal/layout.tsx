@@ -190,7 +190,7 @@ export default function LogMealLayout({
           children
         ) : (
           <Tabs defaultValue="breakfast" className="w-full">
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4 gap-4">
               <ScrollArea className="w-full whitespace-nowrap">
                 <TabsList className="inline-flex">
                   {mealTabs.map((meal) => (
@@ -201,7 +201,7 @@ export default function LogMealLayout({
                 </TabsList>
                 <ScrollBar orientation="horizontal" />
               </ScrollArea>
-              <div className="flex gap-2 ml-2 shrink-0">
+              <div className="hidden sm:flex gap-2 ml-2 shrink-0">
                  <Button asChild>
                   <Link href={`/log-meal/healthify-snap?date=${dateParam}`}>
                     <Camera className="mr-2 h-4 w-4" /> Snap Meal

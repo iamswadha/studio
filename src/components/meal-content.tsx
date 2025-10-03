@@ -121,14 +121,14 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
           <div className="text-center text-muted-foreground py-8 space-y-4">
             <p className="text-4xl font-bold">{Math.round(totalCals)} <span className="text-lg text-muted-foreground">Cal</span></p>
              <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <div className='max-w-xs w-full'>
+                <div className='w-full max-w-xs'>
                     {isAddingFood ? (
                         <div className='flex items-center justify-center gap-2'><Loader2 className="h-4 w-4 animate-spin" /> Adding...</div>
                     ): (
                         <FoodSearchCombobox onSelect={handleAddFood} />
                     )}
                 </div>
-                <Button asChild>
+                <Button asChild className="w-full max-w-xs">
                 <Link href={`/log-meal/healthify-snap?date=${dateParam}`}>
                     <Camera className="mr-2 h-4 w-4" /> Snap Meal
                 </Link>
@@ -141,7 +141,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
              <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
                 <p className="text-2xl font-bold">{Math.round(totalCals)} <span className="text-lg text-muted-foreground">Cal</span></p>
                 <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
-                    <div className='max-w-xs w-full'>
+                    <div className='w-full max-w-xs'>
                          {isAddingFood ? (
                             <div className='flex items-center justify-center gap-2'><Loader2 className="h-4 w-4 animate-spin" /> Adding...</div>
                         ): (
@@ -158,7 +158,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
             {loggedMeals.map((meal) => (
               <div key={meal.id}>
                 <Separator />
-                <div className="flex justify-between items-start pt-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start pt-6 gap-4">
                     <div className="flex-grow flex flex-col md:flex-row items-start gap-4">
                         <div className="w-full md:w-1/3 flex-shrink-0">
                         {meal.imageUrl && (
@@ -191,7 +191,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
                             </div>
                         </div>
                     </div>
-                    <div className="flex flex-col ml-2">
+                    <div className="flex flex-row sm:flex-col self-start">
                         <Button size="icon" variant="ghost" className="h-8 w-8" disabled>
                             <Pencil className="h-4 w-4" />
                         </Button>
