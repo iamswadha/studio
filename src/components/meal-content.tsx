@@ -12,37 +12,14 @@ import { PlusCircle, Camera } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-const mealData = {
-  breakfast: [],
-  morningSnack: [
-    {
-      name: 'Carrot Halwa',
-      recommended: '0.5 katori',
-      recommendedCals: 82,
-      had: '1.0 katori',
-      hadCals: 164,
-    },
-    {
-      name: 'Gulab Jamun',
-      recommended: '11.5 grams',
-      recommendedCals: 38,
-      had: '1.0 jamun with syrup',
-      hadCals: 150,
-    },
-    {
-      name: 'Khichdi',
-      recommended: '0.5 cup',
-      recommendedCals: 104,
-      had: '1.0 bowl',
-      hadCals: 292,
-    },
-  ],
-  lunch: [],
-  eveningSnack: [],
-  dinner: [],
-};
-
-type MealTime = keyof typeof mealData;
+type FoodItem = {
+    id: number;
+    name: string;
+    calories: number;
+    protein: number;
+    carbohydrates: number;
+    fat: number;
+  };
 
 const suggestions = [
   {
@@ -59,15 +36,14 @@ const suggestions = [
   },
 ];
 
-export const MealContent = ({ mealTime }: { mealTime: MealTime }) => {
-  const items = mealData[mealTime];
-  const totalCals = items.reduce((sum, item) => sum + item.hadCals, 0);
+export const MealContent = ({ mealTime, items }: { mealTime: string, items: FoodItem[] }) => {
+  const totalCals = items.reduce((sum, item) => sum + item.calories, 0);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
-          <span>{totalCals} Cal</span>
+          <span>{Math.round(totalCals)} Cal</span>
           <div className="flex gap-2">
             <Button asChild variant="outline">
               <Link href="/log-meal/manual">
@@ -89,31 +65,23 @@ export const MealContent = ({ mealTime }: { mealTime: MealTime }) => {
           </div>
         ) : (
           <div className="space-y-4">
-            {items.map((item, index) => (
-              <div key={index} className="grid grid-cols-3 items-center gap-4">
+            {items.map((item) => (
+              <div key={item.id} className="grid grid-cols-2 items-center gap-4">
                 <div>
                   <p className="font-bold">{item.name}</p>
-                  <p className="text-sm text-green-400">
-                    Recommended - {item.recommended}
-                  </p>
                   <p className="text-sm text-muted-foreground">
-                    You had - {item.had}
+                    {Math.round(item.protein)}g P, {Math.round(item.carbohydrates)}g C, {Math.round(item.fat)}g F
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-green-400">
-                    {item.recommendedCals} Cal
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold">{item.hadCals} Cal</p>
+                  <p className="font-bold">{Math.round(item.calories)} Cal</p>
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {mealTime === 'morningSnack' && (
+        {mealTime === 'morningSnack' && items.length > 0 && (
           <>
             <div className="my-6 p-4 bg-card-foreground/5 rounded-lg text-center">
               <p className="font-semibold mb-2">Was this insight helpful?</p>
