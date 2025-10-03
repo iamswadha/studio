@@ -52,7 +52,7 @@ export default function HealthifySnapPage() {
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  let nextId = useRef(0);
+  const nextId = useRef(0);
 
   const totalNutrition = useMemo(() => {
     return foodItems.reduce(
@@ -165,8 +165,23 @@ export default function HealthifySnapPage() {
   };
 
   const handleUpdateItem = useCallback(async (id: number, newName: string) => {
-    if (newName.trim() === '') return;
+    if (newName.trim() === '') {
+        // If the new name is empty, just cancel editing
+        setIsEditing(null);
+        setEditingValue('');
+        return;
+    };
 
+    const originalItem = foodItems.find(item => item.id === id);
+
+    // Optimistically update the UI
+    setFoodItems((currentItems) =>
+      currentItems.map((item) =>
+        item.id === id
+          ? { ...item, name: newName, calories: 0, protein: 0, carbohydrates: 0, fat: 0 } // Clear old nutrition
+          : item
+      )
+    );
     setIsEditing(null);
     setEditingValue('');
 
@@ -187,15 +202,13 @@ export default function HealthifySnapPage() {
       toast({
         variant: 'destructive',
         title: 'Could not fetch nutrition data',
+        description: `Could not get data for "${newName}". Reverting name.`,
       });
       // Revert optimistic update on failure
-      const originalItem = foodItems.find(item => item.id === id);
        if (originalItem) {
           setFoodItems((currentItems) =>
             currentItems.map((item) =>
-              item.id === id
-                ? { ...item, name: originalItem.name }
-                : item
+              item.id === id ? originalItem : item
             )
           );
        }
@@ -275,6 +288,7 @@ export default function HealthifySnapPage() {
                       onSelect={(value) => {
                         handleUpdateItem(item.id, value);
                       }}
+                      onCancel={() => setIsEditing(null)}
                     />
                 ) : (
                   <>
@@ -309,6 +323,7 @@ export default function HealthifySnapPage() {
                     handleAddItem(value);
                     setIsAdding(false);
                   }}
+                   onCancel={() => setIsAdding(false)}
                 />
                  <Button
                     size="icon"
@@ -448,3 +463,5 @@ export default function HealthifySnapPage() {
     </AppShell>
   );
 }
+
+    

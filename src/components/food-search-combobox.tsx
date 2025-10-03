@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { Check, ChevronsUpDown, Loader2, PlusCircle } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader2, PlusCircle, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,13 +30,15 @@ type Suggestion = {
 interface FoodSearchComboboxProps {
   onSelect: (value: string) => void;
   defaultValue?: string;
+  onCancel?: () => void;
 }
 
 export function FoodSearchCombobox({
   onSelect,
   defaultValue,
+  onCancel,
 }: FoodSearchComboboxProps) {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(true); // Start open by default when editing
   const [value, setValue] = React.useState(defaultValue || '');
   const [search, setSearch] = React.useState(defaultValue || '');
   const [suggestions, setSuggestions] = React.useState<Suggestion[]>([]);
@@ -70,21 +72,30 @@ export function FoodSearchCombobox({
     onSelect(newValue);
     setOpen(false);
   };
+  
+  const handleOpenChange = (isOpen: boolean) => {
+      setOpen(isOpen);
+      if(!isOpen && onCancel) {
+          onCancel();
+      }
+  }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <div className="flex items-center w-full">
+    <Popover open={open} onOpenChange={handleOpenChange}>
+      <div className="flex items-center w-full gap-2">
         <PopoverTrigger asChild>
           <Button
             variant="outline"
             role="combobox"
             aria-expanded={open}
             className="w-full justify-between"
+            onClick={() => setOpen(prev => !prev)}
           >
-            <span className="truncate">{value ? value : 'Select food...'}</span>
+            <span className="truncate">{search ? search : 'Select food...'}</span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
+        {onCancel && <Button size="icon" variant="ghost" onClick={onCancel} className="h-8 w-8 shrink-0"><X className="h-4 w-4" /></Button>}
       </div>
       <PopoverContent className="w-[300px] p-0">
         <Command shouldFilter={false}>
@@ -92,6 +103,7 @@ export function FoodSearchCombobox({
             placeholder="Search for Indian food..."
             value={search}
             onValueChange={setSearch}
+            
           />
           <CommandList>
             {isLoading && (
@@ -146,3 +158,4 @@ export function FoodSearchCombobox({
     </Popover>
   );
 }
+    
