@@ -40,6 +40,7 @@ import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { Skeleton } from './ui/skeleton';
 import { Separator } from './ui/separator';
+import { ThemeToggle } from './theme-toggle';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -167,6 +168,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex-1">
             {/* Can add breadcrumbs or page title here */}
           </div>
+          <ThemeToggle />
         </header>
         <main className="flex-1 p-4 md:p-8">{children}</main>
       </SidebarInset>
