@@ -30,10 +30,11 @@ import {
   X,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Separator } from '@/components/ui/separator';
 
 type FoodItem = {
+  id: number;
   name: string;
   calories: number;
   protein: number;
@@ -44,12 +45,6 @@ type FoodItem = {
 export default function HealthifySnapPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
-  const [totalNutrition, setTotalNutrition] = useState({
-    calories: 0,
-    protein: 0,
-    carbohydrates: 0,
-    fat: 0,
-  });
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState<number | null>(null);
   const [editingValue, setEditingValue] = useState('');
@@ -57,9 +52,10 @@ export default function HealthifySnapPage() {
   const [addingValue, setAddingValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  let nextId = useRef(0);
 
-  useEffect(() => {
-    const totals = foodItems.reduce(
+  const totalNutrition = useMemo(() => {
+    return foodItems.reduce(
       (acc, item) => ({
         calories: acc.calories + item.calories,
         protein: acc.protein + item.protein,
@@ -68,7 +64,6 @@ export default function HealthifySnapPage() {
       }),
       { calories: 0, protein: 0, carbohydrates: 0, fat: 0 }
     );
-    setTotalNutrition(totals);
   }, [foodItems]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,11 +103,12 @@ export default function HealthifySnapPage() {
             const nutrition = await getSingleItemNutrition({
               foodItemName: itemName,
             });
+            const id = nextId.current++;
             if (nutrition.success && nutrition.data) {
-              return { name: itemName, ...nutrition.data };
+              return { id, name: itemName, ...nutrition.data };
             }
-            // Return a default object if nutrition fetch fails for one item
             return {
+              id,
               name: itemName,
               calories: 0,
               protein: 0,
@@ -159,53 +155,70 @@ export default function HealthifySnapPage() {
     }
   };
 
-  const handleRemoveItem = (index: number) => {
-    setFoodItems(foodItems.filter((_, i) => i !== index));
+  const handleRemoveItem = (id: number) => {
+    setFoodItems(foodItems.filter((item) => item.id !== id));
   };
 
-  const handleEditItem = (index: number, value: string) => {
-    setIsEditing(index);
+  const handleEditItem = (id: number, value: string) => {
+    setIsEditing(id);
     setEditingValue(value);
   };
 
-  const handleUpdateItem = async (index: number) => {
+  const handleUpdateItem = useCallback(async (id: number) => {
     if (editingValue.trim() === '') return;
-    setIsLoading(true);
+
+    // Optimistically update the UI
+    const originalItems = foodItems;
+    const newItems = foodItems.map((item) =>
+      item.id === id ? { ...item, name: editingValue } : item
+    );
+    setFoodItems(newItems);
+    setIsEditing(null);
+    setEditingValue('');
+
+    // Fetch new nutrition data
     const nutrition = await getSingleItemNutrition({
       foodItemName: editingValue,
     });
+
     if (nutrition.success && nutrition.data) {
-      const newItems = [...foodItems];
-      newItems[index] = { name: editingValue, ...nutrition.data };
-      setFoodItems(newItems);
+      setFoodItems((currentItems) =>
+        currentItems.map((item) =>
+          item.id === id
+            ? { ...item, name: editingValue, ...nutrition.data }
+            : item
+        )
+      );
     } else {
+      // Revert if API call fails
+      setFoodItems(originalItems);
       toast({
         variant: 'destructive',
         title: 'Could not fetch nutrition data',
       });
     }
-    setIsEditing(null);
-    setEditingValue('');
-    setIsLoading(false);
-  };
+  }, [editingValue, foodItems]);
+
 
   const handleAddItem = async () => {
     if (addingValue.trim() === '') return;
-    setIsLoading(true);
+    
+    const newItemName = addingValue;
+    setIsAdding(false);
+    setAddingValue('');
+
     const nutrition = await getSingleItemNutrition({
-      foodItemName: addingValue,
+      foodItemName: newItemName,
     });
     if (nutrition.success && nutrition.data) {
-      setFoodItems([...foodItems, { name: addingValue, ...nutrition.data }]);
+      const newId = nextId.current++;
+      setFoodItems([...foodItems, { id: newId, name: newItemName, ...nutrition.data }]);
     } else {
       toast({
         variant: 'destructive',
         title: 'Could not fetch nutrition data',
       });
     }
-    setIsAdding(false);
-    setAddingValue('');
-    setIsLoading(false);
   };
 
   const AnalysisResults = () => (
@@ -250,23 +263,25 @@ export default function HealthifySnapPage() {
             <Beef /> Identified Items
           </h3>
           <ul className="space-y-2">
-            {foodItems.map((item, index) => (
+            {foodItems.map((item) => (
               <li
-                key={index}
+                key={item.id}
                 className="flex items-center justify-between text-sm"
               >
-                {isEditing === index ? (
+                {isEditing === item.id ? (
                   <div className="flex-1 flex gap-2">
                     <Input
                       value={editingValue}
                       onChange={(e) => setEditingValue(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleUpdateItem(item.id)}
                       className="h-8"
+                      autoFocus
                     />
                     <Button
                       size="icon"
                       variant="ghost"
                       className="h-8 w-8"
-                      onClick={() => handleUpdateItem(index)}
+                      onClick={() => handleUpdateItem(item.id)}
                     >
                       <Check className="h-4 w-4" />
                     </Button>
@@ -289,7 +304,7 @@ export default function HealthifySnapPage() {
                       size="icon"
                       variant="ghost"
                       className="h-6 w-6"
-                      onClick={() => handleEditItem(index, item.name)}
+                      onClick={() => handleEditItem(item.id, item.name)}
                     >
                       <Pencil className="h-4 w-4" />
                     </Button>
@@ -297,7 +312,7 @@ export default function HealthifySnapPage() {
                       size="icon"
                       variant="ghost"
                       className="h-6 w-6 text-destructive"
-                      onClick={() => handleRemoveItem(index)}
+                      onClick={() => handleRemoveItem(item.id)}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -310,8 +325,10 @@ export default function HealthifySnapPage() {
                 <Input
                   value={addingValue}
                   onChange={(e) => setAddingValue(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddItem()}
                   placeholder="New item name"
                   className="h-8"
+                  autoFocus
                 />
                 <Button
                   size="icon"
@@ -332,14 +349,16 @@ export default function HealthifySnapPage() {
               </li>
             )}
           </ul>
-          <Button
-            variant="ghost"
-            className="w-full mt-2"
-            onClick={() => setIsAdding(true)}
-          >
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add item
-          </Button>
+           {!isAdding && (
+            <Button
+              variant="ghost"
+              className="w-full mt-2"
+              onClick={() => setIsAdding(true)}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add item
+            </Button>
+          )}
         </div>
       </div>
     </>
@@ -443,7 +462,7 @@ export default function HealthifySnapPage() {
                   variant="secondary"
                   disabled={isLoading}
                 >
-                  {isLoading ? (
+                  {isLoading && foodItems.some(item => item.calories === 0) ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
                     'Log This Meal'
