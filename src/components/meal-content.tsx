@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Camera, Clock } from 'lucide-react';
+import { PlusCircle, Camera } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Separator } from './ui/separator';
@@ -37,12 +37,12 @@ export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, logge
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
             <span className="capitalize">{mealTime.replace('Snack', ' Snack')}</span>
-            <span className="text-lg font-bold">{Math.round(totalCals)} Cal</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
         {loggedMeals.length === 0 ? (
           <div className="text-center text-muted-foreground py-8 space-y-4">
+            <p className="text-4xl font-bold">{Math.round(totalCals)} <span className="text-lg text-muted-foreground">Cal</span></p>
              <div className="flex justify-center items-center gap-4">
                 <Button asChild variant="outline">
                 <Link href="/log-meal/manual">
@@ -59,29 +59,24 @@ export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, logge
           </div>
         ) : (
           <div className="space-y-6">
-             <div className="flex justify-end items-center gap-2 mb-4">
-                <Button asChild variant="outline">
-                <Link href="/log-meal/manual">
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Food
-                </Link>
-                </Button>
-                <Button asChild>
-                <Link href="/log-meal/healthify-snap">
-                    <Camera className="mr-2 h-4 w-4" /> Snap Meal
-                </Link>
-                </Button>
+             <div className="flex justify-between items-center mb-4">
+                <p className="text-2xl font-bold">{Math.round(totalCals)} <span className="text-lg text-muted-foreground">Cal</span></p>
+                <div className="flex items-center gap-2">
+                    <Button asChild variant="outline" size="sm">
+                    <Link href="/log-meal/manual">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Food
+                    </Link>
+                    </Button>
+                    <Button asChild size="sm">
+                    <Link href="/log-meal/healthify-snap">
+                        <Camera className="mr-2 h-4 w-4" /> Snap Meal
+                    </Link>
+                    </Button>
+                </div>
             </div>
             <Separator />
-            <div className="relative pl-8">
-              <div className="absolute left-[1px] top-0 h-full w-0.5 bg-border -translate-x-1/2"></div>
-              {loggedMeals.map((meal, index) => (
-                <div key={meal.id} className="relative mb-8">
-                   <div className="absolute left-0 top-0.5 h-4 w-4 rounded-full bg-primary border-4 border-background -translate-x-1/2"></div>
-                   <div className="flex items-center gap-2 mb-2">
-                     <Clock className="h-4 w-4 text-muted-foreground" />
-                     <p className="font-semibold text-sm">{meal.timestamp}</p>
-                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4">
+            {loggedMeals.map((meal) => (
+                <div key={meal.id} className="grid grid-cols-1 md:grid-cols-3 items-start gap-4">
                     <div className="col-span-1">
                       {meal.imageUrl && (
                         <Image
@@ -112,11 +107,8 @@ export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, logge
                             Total: {Math.round(meal.totalNutrition.calories)} Cal
                         </div>
                     </div>
-                  </div>
-                   {index < loggedMeals.length -1 && <Separator className="mt-6" />}
                 </div>
               ))}
-            </div>
           </div>
         )}
 
