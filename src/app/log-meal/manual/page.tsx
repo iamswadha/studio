@@ -18,6 +18,13 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,8 +32,19 @@ import { Utensils, ArrowLeft } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import Link from 'next/link';
+import { useUser, useFirestore, addDocumentNonBlocking } from '@/firebase';
+import { collection, serverTimestamp } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+import type { MealTime } from '../layout';
 
 const mealSchema = z.object({
+  mealTime: z.enum([
+    'breakfast',
+    'morningSnack',
+    'lunch',
+    'eveningSnack',
+    'dinner',
+  ]),
   foodName: z.string().min(2, 'Food name is required.'),
   calories: z.coerce.number().min(0, 'Calories must be a positive number.'),
   protein: z.coerce.number().min(0, 'Protein must be a positive number.'),
@@ -36,9 +54,14 @@ const mealSchema = z.object({
 
 export default function ManualLogMealPage() {
   const { toast } = useToast();
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof mealSchema>>({
     resolver: zodResolver(mealSchema),
     defaultValues: {
+      mealTime: 'breakfast',
       foodName: '',
       calories: 0,
       protein: 0,
@@ -48,12 +71,45 @@ export default function ManualLogMealPage() {
   });
 
   function onSubmit(values: z.infer<typeof mealSchema>) {
-    console.log(values);
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Not logged in',
+        description: 'You must be logged in to log a meal.',
+      });
+      return;
+    }
+
+    const newMeal = {
+      mealTime: values.mealTime as MealTime,
+      items: [
+        {
+          id: Date.now(),
+          name: values.foodName,
+          calories: values.calories,
+          protein: values.protein,
+          carbohydrates: values.carbs,
+          fat: values.fat,
+        },
+      ],
+      totalNutrition: {
+        calories: values.calories,
+        protein: values.protein,
+        carbohydrates: values.carbs,
+        fat: values.fat,
+      },
+      userId: user.uid,
+      timestamp: serverTimestamp(),
+    };
+
+    const mealsCol = collection(firestore, 'users', user.uid, 'meals');
+    addDocumentNonBlocking(mealsCol, newMeal);
+
     toast({
       title: 'Meal Logged!',
       description: `${values.foodName} has been added to your daily log.`,
     });
-    form.reset();
+    router.push('/log-meal');
   }
 
   return (
@@ -79,6 +135,38 @@ export default function ManualLogMealPage() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
+                name="mealTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Meal Time</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a meal time" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="breakfast">Breakfast</SelectItem>
+                        <SelectItem value="morningSnack">
+                          Morning Snack
+                        </SelectItem>
+                        <SelectItem value="lunch">Lunch</SelectItem>
+                        <SelectItem value="eveningSnack">
+                          Evening Snack
+                        </SelectItem>
+                        <SelectItem value="dinner">Dinner</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="foodName"
                 render={({ field }) => (
                   <FormItem>
@@ -90,7 +178,7 @@ export default function ManualLogMealPage() {
                       />
                     </FormControl>
                     <FormDescription>
-                      You can search our database in a future version!
+                      You can log a single food item here.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -105,7 +193,12 @@ export default function ManualLogMealPage() {
                     <FormItem>
                       <FormLabel>Calories (kcal)</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="e.g., 450" {...field} value={field.value ?? ''} />
+                        <Input
+                          type="number"
+                          placeholder="e.g., 450"
+                          {...field}
+                          value={field.value ?? ''}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -118,7 +211,12 @@ export default function ManualLogMealPage() {
                     <FormItem>
                       <FormLabel>Protein (g)</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="e.g., 30" {...field} value={field.value ?? ''} />
+                        <Input
+                          type="number"
+                          placeholder="e.g., 30"
+                          {...field}
+                          value={field.value ?? ''}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -131,7 +229,12 @@ export default function ManualLogMealPage() {
                     <FormItem>
                       <FormLabel>Carbohydrates (g)</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="e.g., 20" {...field} value={field.value ?? ''} />
+                        <Input
+                          type="number"
+                          placeholder="e.g., 20"
+                          {...field}
+                          value={field.value ?? ''}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -144,7 +247,12 @@ export default function ManualLogMealPage() {
                     <FormItem>
                       <FormLabel>Fat (g)</FormLabel>
                       <FormControl>
-                        <Input type="number" placeholder="e.g., 15" {...field} value={field.value ?? ''} />
+                        <Input
+                          type="number"
+                          placeholder="e.g., 15"
+                          {...field}
+                          value={field.value ?? ''}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
