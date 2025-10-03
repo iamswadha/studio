@@ -20,26 +20,28 @@ export default function ActivityPage() {
           title="Activity Tracking"
           description="Sync your wearable devices to automatically track your fitness data."
         >
-          <Button variant="outline">
-            <Image
-              src="/apple-health.svg"
-              alt="Apple Health"
-              width={20}
-              height={20}
-              className="mr-2"
-            />
-            Connect Apple Health
-          </Button>
-          <Button variant="outline">
-            <Image
-              src="/google-fit.svg"
-              alt="Google Fit"
-              width={20}
-              height={20}
-              className="mr-2"
-            />
-            Connect Google Fit
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline">
+              <Image
+                src="/apple-health.svg"
+                alt="Apple Health"
+                width={20}
+                height={20}
+                className="mr-2"
+              />
+              Connect Apple Health
+            </Button>
+            <Button variant="outline">
+              <Image
+                src="/google-fit.svg"
+                alt="Google Fit"
+                width={20}
+                height={20}
+                className="mr-2"
+              />
+              Connect Google Fit
+            </Button>
+          </div>
         </PageHeader>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

@@ -159,19 +159,19 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
               <div key={meal.id}>
                 <Separator />
                 <div className="flex justify-between items-start pt-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4 flex-grow">
-                        <div className="col-span-1">
+                    <div className="flex-grow flex flex-col md:flex-row items-start gap-4">
+                        <div className="w-full md:w-1/3 flex-shrink-0">
                         {meal.imageUrl && (
                             <Image
                             src={meal.imageUrl}
                             alt="Logged meal"
                             width={150}
                             height={150}
-                            className="rounded-lg object-cover aspect-square"
+                            className="rounded-lg object-cover aspect-square w-full"
                             />
                         )}
                         </div>
-                        <div className='col-span-2 space-y-3'>
+                        <div className='w-full md:w-2/3 space-y-3'>
                             {meal.items.map(item => (
                                 <div key={item.id} className="grid grid-cols-[1fr_auto] items-center gap-2">
                                     <div>
