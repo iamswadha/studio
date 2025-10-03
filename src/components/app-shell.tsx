@@ -39,6 +39,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useAuth, useUser } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { Skeleton } from './ui/skeleton';
+import { Separator } from './ui/separator';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -72,9 +73,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <SidebarMenu>
             {navItems.map((item) => (
               <SidebarMenuItem key={item.href}>
-                <Link href={item.href} passHref>
+                <Link href={item.href}>
                   <SidebarMenuButton
-                    as="a"
                     isActive={pathname.startsWith(item.href)}
                     tooltip={item.label}
                   >
@@ -84,6 +84,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Link>
               </SidebarMenuItem>
             ))}
+             <Separator className="my-2" />
+             <SidebarMenuItem>
+                <SidebarMenuButton onClick={handleLogout} tooltip="Log Out">
+                    <LogOut />
+                    <span>Log Out</span>
+                </SidebarMenuButton>
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
