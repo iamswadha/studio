@@ -14,8 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
-import { getMealAnalysis } from '@/lib/actions';
-import type { LogMealsWithHealthifySnapOutput } from '@/ai/flows/log-meals-with-healthify-snap';
+import { getMealAnalysis, getSingleItemNutrition } from '@/lib/actions';
 import {
   Camera,
   Flame,
@@ -24,23 +23,58 @@ import {
   Beef,
   Wheat,
   Drumstick,
+  Trash2,
+  PlusCircle,
+  Pencil,
+  Check,
+  X,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Separator } from '@/components/ui/separator';
+
+type FoodItem = {
+  name: string;
+  calories: number;
+  protein: number;
+  carbohydrates: number;
+  fat: number;
+};
 
 export default function HealthifySnapPage() {
   const [preview, setPreview] = useState<string | null>(null);
-  const [result, setResult] =
-    useState<LogMealsWithHealthifySnapOutput | null>(null);
+  const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
+  const [totalNutrition, setTotalNutrition] = useState({
+    calories: 0,
+    protein: 0,
+    carbohydrates: 0,
+    fat: 0,
+  });
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState<number | null>(null);
+  const [editingValue, setEditingValue] = useState('');
+  const [isAdding, setIsAdding] = useState(false);
+  const [addingValue, setAddingValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const totals = foodItems.reduce(
+      (acc, item) => ({
+        calories: acc.calories + item.calories,
+        protein: acc.protein + item.protein,
+        carbohydrates: acc.carbohydrates + item.carbohydrates,
+        fat: acc.fat + item.fat,
+      }),
+      { calories: 0, protein: 0, carbohydrates: 0, fat: 0 }
+    );
+    setTotalNutrition(totals);
+  }, [foodItems]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setResult(null);
+      setFoodItems([]);
       setError(null);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -63,13 +97,31 @@ export default function HealthifySnapPage() {
 
     setIsLoading(true);
     setError(null);
-    setResult(null);
+    setFoodItems([]);
 
     try {
       const response = await getMealAnalysis({ photoDataUri: preview });
 
       if (response.success && response.data) {
-        setResult(response.data);
+        const itemsWithNutrition = await Promise.all(
+          response.data.foodItems.map(async (itemName) => {
+            const nutrition = await getSingleItemNutrition({
+              foodItemName: itemName,
+            });
+            if (nutrition.success && nutrition.data) {
+              return { name: itemName, ...nutrition.data };
+            }
+            // Return a default object if nutrition fetch fails for one item
+            return {
+              name: itemName,
+              calories: 0,
+              protein: 0,
+              carbohydrates: 0,
+              fat: 0,
+            };
+          })
+        );
+        setFoodItems(itemsWithNutrition);
       } else {
         setError(response.error || 'An unknown error occurred.');
         toast({
@@ -93,17 +145,205 @@ export default function HealthifySnapPage() {
   };
 
   const handleLogMeal = () => {
-    if (!result) return;
+    if (foodItems.length === 0) return;
     toast({
       title: 'Meal Logged!',
-      description: `Successfully logged ${result.calories} kcal.`,
+      description: `Successfully logged ${Math.round(
+        totalNutrition.calories
+      )} kcal.`,
     });
     setPreview(null);
-    setResult(null);
+    setFoodItems([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
+
+  const handleRemoveItem = (index: number) => {
+    setFoodItems(foodItems.filter((_, i) => i !== index));
+  };
+
+  const handleEditItem = (index: number, value: string) => {
+    setIsEditing(index);
+    setEditingValue(value);
+  };
+
+  const handleUpdateItem = async (index: number) => {
+    if (editingValue.trim() === '') return;
+    setIsLoading(true);
+    const nutrition = await getSingleItemNutrition({
+      foodItemName: editingValue,
+    });
+    if (nutrition.success && nutrition.data) {
+      const newItems = [...foodItems];
+      newItems[index] = { name: editingValue, ...nutrition.data };
+      setFoodItems(newItems);
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Could not fetch nutrition data',
+      });
+    }
+    setIsEditing(null);
+    setEditingValue('');
+    setIsLoading(false);
+  };
+
+  const handleAddItem = async () => {
+    if (addingValue.trim() === '') return;
+    setIsLoading(true);
+    const nutrition = await getSingleItemNutrition({
+      foodItemName: addingValue,
+    });
+    if (nutrition.success && nutrition.data) {
+      setFoodItems([...foodItems, { name: addingValue, ...nutrition.data }]);
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Could not fetch nutrition data',
+      });
+    }
+    setIsAdding(false);
+    setAddingValue('');
+    setIsLoading(false);
+  };
+
+  const AnalysisResults = () => (
+    <>
+      <div className="space-y-6">
+        <div className="flex items-center justify-center gap-2 text-center">
+          <Flame className="h-8 w-8 text-primary" />
+          <div>
+            <p className="text-4xl font-bold">
+              {Math.round(totalNutrition.calories)}
+            </p>
+            <p className="text-sm text-muted-foreground">Estimated Calories</p>
+          </div>
+        </div>
+        <Separator />
+        <div className="grid grid-cols-3 gap-4 text-center">
+          <div>
+            <Drumstick className="mx-auto h-6 w-6 text-accent" />
+            <p className="font-bold text-lg">
+              {Math.round(totalNutrition.protein)}g
+            </p>
+            <p className="text-xs text-muted-foreground">Protein</p>
+          </div>
+          <div>
+            <Wheat className="mx-auto h-6 w-6 text-accent" />
+            <p className="font-bold text-lg">
+              {Math.round(totalNutrition.carbohydrates)}g
+            </p>
+            <p className="text-xs text-muted-foreground">Carbs</p>
+          </div>
+          <div>
+            <Salad className="mx-auto h-6 w-6 text-accent" />
+            <p className="font-bold text-lg">
+              {Math.round(totalNutrition.fat)}g
+            </p>
+            <p className="text-xs text-muted-foreground">Fat</p>
+          </div>
+        </div>
+        <Separator />
+        <div>
+          <h3 className="font-semibold mb-2 flex items-center gap-2">
+            <Beef /> Identified Items
+          </h3>
+          <ul className="space-y-2">
+            {foodItems.map((item, index) => (
+              <li
+                key={index}
+                className="flex items-center justify-between text-sm"
+              >
+                {isEditing === index ? (
+                  <div className="flex-1 flex gap-2">
+                    <Input
+                      value={editingValue}
+                      onChange={(e) => setEditingValue(e.target.value)}
+                      className="h-8"
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8"
+                      onClick={() => handleUpdateItem(index)}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8"
+                      onClick={() => setIsEditing(null)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <span className="flex-1">{item.name}</span>
+                    <span className="text-xs text-muted-foreground mr-2">
+                      {Math.round(item.calories)} kcal
+                    </span>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6"
+                      onClick={() => handleEditItem(index, item.name)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6 text-destructive"
+                      onClick={() => handleRemoveItem(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+              </li>
+            ))}
+            {isAdding && (
+              <li className="flex gap-2">
+                <Input
+                  value={addingValue}
+                  onChange={(e) => setAddingValue(e.target.value)}
+                  placeholder="New item name"
+                  className="h-8"
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8"
+                  onClick={handleAddItem}
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-8 w-8"
+                  onClick={() => setIsAdding(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </li>
+            )}
+          </ul>
+          <Button
+            variant="ghost"
+            className="w-full mt-2"
+            onClick={() => setIsAdding(true)}
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add item
+          </Button>
+        </div>
+      </div>
+    </>
+  );
 
   return (
     <AppShell>
@@ -149,12 +389,14 @@ export default function HealthifySnapPage() {
                   className="w-full"
                   size="lg"
                 >
-                  {isLoading ? (
+                  {isLoading && foodItems.length === 0 ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
                     <Camera className="mr-2 h-4 w-4" />
                   )}
-                  {isLoading ? 'Analyzing...' : 'Analyze Meal'}
+                  {isLoading && foodItems.length === 0
+                    ? 'Analyzing...'
+                    : 'Analyze Meal'}
                 </Button>
               </CardFooter>
             </form>
@@ -164,11 +406,12 @@ export default function HealthifySnapPage() {
             <CardHeader>
               <CardTitle>Analysis Results</CardTitle>
               <CardDescription>
-                Here's what our AI found in your meal.
+                Here's what our AI found in your meal. You can edit items before
+                logging.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {isLoading && (
+              {isLoading && foodItems.length === 0 && (
                 <div className="flex flex-col items-center justify-center gap-4 text-center p-8">
                   <Loader2 className="h-12 w-12 animate-spin text-primary" />
                   <p className="font-semibold">Analyzing your meal...</p>
@@ -183,70 +426,28 @@ export default function HealthifySnapPage() {
                   <p className="text-sm">{error}</p>
                 </div>
               )}
-              {!result && !isLoading && !error && (
-                <div className="text-center p-8 text-muted-foreground">
-                  <p>Upload a photo to see the nutritional analysis.</p>
-                </div>
-              )}
-              {result && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-center gap-2 text-center">
-                    <Flame className="h-8 w-8 text-primary" />
-                    <div>
-                      <p className="text-4xl font-bold">
-                        {Math.round(result.calories)}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Estimated Calories
-                      </p>
-                    </div>
+              {!isLoading &&
+                foodItems.length === 0 &&
+                !error && (
+                  <div className="text-center p-8 text-muted-foreground">
+                    <p>Upload a photo to see the nutritional analysis.</p>
                   </div>
-                  <Separator />
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <Drumstick className="mx-auto h-6 w-6 text-accent" />
-                      <p className="font-bold text-lg">
-                        {Math.round(result.nutrients.protein)}g
-                      </p>
-                      <p className="text-xs text-muted-foreground">Protein</p>
-                    </div>
-                    <div>
-                      <Wheat className="mx-auto h-6 w-6 text-accent" />
-                      <p className="font-bold text-lg">
-                        {Math.round(result.nutrients.carbohydrates)}g
-                      </p>
-                      <p className="text-xs text-muted-foreground">Carbs</p>
-                    </div>
-                    <div>
-                      <Salad className="mx-auto h-6 w-6 text-accent" />
-                      <p className="font-bold text-lg">
-                        {Math.round(result.nutrients.fat)}g
-                      </p>
-                      <p className="text-xs text-muted-foreground">Fat</p>
-                    </div>
-                  </div>
-                  <Separator />
-                  <div>
-                    <h3 className="font-semibold mb-2 flex items-center gap-2">
-                      <Beef /> Identified Items
-                    </h3>
-                    <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                      {result.foodItems.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
+                )}
+              {foodItems.length > 0 && <AnalysisResults />}
             </CardContent>
-            {result && (
+            {foodItems.length > 0 && (
               <CardFooter>
                 <Button
                   onClick={handleLogMeal}
                   className="w-full"
                   variant="secondary"
+                  disabled={isLoading}
                 >
-                  Log This Meal
+                  {isLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    'Log This Meal'
+                  )}
                 </Button>
               </CardFooter>
             )}

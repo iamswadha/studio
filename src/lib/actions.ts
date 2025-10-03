@@ -4,6 +4,10 @@ import {
   logMealsWithHealthifySnap,
   type LogMealsWithHealthifySnapInput,
 } from '@/ai/flows/log-meals-with-healthify-snap';
+import {
+  getFoodItemNutrition,
+  type FoodItemNutritionInput,
+} from '@/ai/flows/get-food-item-nutrition';
 
 export async function getMealAnalysis(input: LogMealsWithHealthifySnapInput) {
   try {
@@ -15,6 +19,20 @@ export async function getMealAnalysis(input: LogMealsWithHealthifySnapInput) {
     return {
       success: false,
       error: 'Failed to analyze meal. The AI model might be unavailable. Please try again later.',
+    };
+  }
+}
+
+export async function getSingleItemNutrition(input: FoodItemNutritionInput) {
+  try {
+    const result = await getFoodItemNutrition(input);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Error in getSingleItemNutrition:', error);
+    return {
+      success: false,
+      error:
+        'Failed to get nutrition data. The AI model might be unavailable. Please try again later.',
     };
   }
 }
