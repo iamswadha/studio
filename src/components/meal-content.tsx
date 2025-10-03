@@ -8,11 +8,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Camera } from 'lucide-react';
+import { PlusCircle, Camera, Pencil, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Separator } from './ui/separator';
-import type { LoggedMeal } from '@/app/log-meal/layout';
+import type { LoggedMeal, FoodItem } from '@/app/log-meal/layout';
+import { useFirestore, useUser, deleteDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 
 const suggestions = [
   {
@@ -31,6 +33,42 @@ const suggestions = [
 
 export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, loggedMeals: LoggedMeal[] }) => {
   const totalCals = loggedMeals.reduce((sum, meal) => sum + meal.totalNutrition.calories, 0);
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const handleUpdateMeal = (meal: LoggedMeal, updatedItems: FoodItem[]) => {
+    if (!user) return;
+
+    const mealDocRef = doc(firestore, 'users', user.uid, 'meals', meal.id);
+
+    if (updatedItems.length === 0) {
+      deleteDocumentNonBlocking(mealDocRef);
+    } else {
+      const newTotalNutrition = updatedItems.reduce(
+        (acc, item) => ({
+          calories: acc.calories + item.calories,
+          protein: acc.protein + item.protein,
+          carbohydrates: acc.carbohydrates + item.carbohydrates,
+          fat: acc.fat + item.fat,
+        }),
+        { calories: 0, protein: 0, carbohydrates: 0, fat: 0 }
+      );
+
+      const updatedMeal = {
+        ...meal,
+        items: updatedItems,
+        totalNutrition: newTotalNutrition,
+      };
+      // We pass the new data to the update function. Note that 'id' is not part of the Firestore document fields.
+      const { id, ...mealDataToUpdate } = updatedMeal;
+      updateDocumentNonBlocking(mealDocRef, mealDataToUpdate);
+    }
+  };
+
+  const handleRemoveItem = (meal: LoggedMeal, itemId: number) => {
+    const updatedItems = meal.items.filter((item) => item.id !== itemId);
+    handleUpdateMeal(meal, updatedItems);
+  };
 
   return (
     <Card>
@@ -74,9 +112,10 @@ export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, logge
                     </Button>
                 </div>
             </div>
-            <Separator />
             {loggedMeals.map((meal) => (
-                <div key={meal.id} className="grid grid-cols-1 md:grid-cols-3 items-start gap-4">
+              <div key={meal.id}>
+                <Separator />
+                <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-4 pt-6">
                     <div className="col-span-1">
                       {meal.imageUrl && (
                         <Image
@@ -90,7 +129,7 @@ export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, logge
                     </div>
                     <div className='col-span-2 space-y-3'>
                         {meal.items.map(item => (
-                            <div key={item.id} className="grid grid-cols-2 items-center gap-4">
+                            <div key={item.id} className="grid grid-cols-[1fr_auto_auto] items-center gap-2">
                                 <div>
                                     <p className="font-bold">{item.name}</p>
                                     <p className="text-sm text-muted-foreground">
@@ -100,6 +139,19 @@ export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, logge
                                 <div className="text-right">
                                     <p className="font-bold">{Math.round(item.calories)} Cal</p>
                                 </div>
+                                <div className="flex items-center">
+                                    <Button size="icon" variant="ghost" className="h-6 w-6" disabled>
+                                        <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      size="icon"
+                                      variant="ghost"
+                                      className="h-6 w-6 text-destructive"
+                                      onClick={() => handleRemoveItem(meal, item.id)}
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
                             </div>
                         ))}
                         <Separator />
@@ -108,6 +160,7 @@ export const MealContent = ({ mealTime, loggedMeals }: { mealTime: string, logge
                         </div>
                     </div>
                 </div>
+              </div>
               ))}
           </div>
         )}

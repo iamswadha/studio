@@ -7,10 +7,10 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Camera } from 'lucide-react';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { MealContent } from '@/components/meal-content';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { useUser, useFirestore, addDocumentNonBlocking, useCollection, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import {
   collection,
   serverTimestamp,
@@ -20,7 +20,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 
-type FoodItem = {
+export type FoodItem = {
   id: number;
   name: string;
   calories: number;
@@ -156,11 +156,9 @@ export default function LogMealLayout({
                         {meal.label}
                       </TabsTrigger>
                     ))}
-                    {pageTabs.map((page) => (
-                       <TabsTrigger key={page.value} value={page.value} asChild>
-                         <Link href={page.href}>{page.label}</Link>
-                      </TabsTrigger>
-                    ))}
+                    <TabsTrigger value="healthify-snap" asChild>
+                      <Link href="/log-meal/healthify-snap">HealthifySnap</Link>
+                    </TabsTrigger>
                   </TabsList>
                   <ScrollBar orientation="horizontal" />
                 </ScrollArea>
