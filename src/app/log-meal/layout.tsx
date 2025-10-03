@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useAuth, useFirestore, useUser } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import {
   addDocumentNonBlocking,
   useCollection,
@@ -141,7 +141,7 @@ export default function LogMealLayout({
     totalNutrition: any;
     imageUrl?: string;
   }) => {
-    if (!user) return;
+    if (!user || !meal.mealTime) return;
 
     const mealToLog = {
       ...meal,
@@ -194,20 +194,24 @@ export default function LogMealLayout({
                 <ScrollBar orientation="horizontal" />
               </ScrollArea>
             )}
-            <Button variant="ghost">
-              <PlusCircle className="mr-2 h-4 w-4" /> Add Meal
+            <Button variant="outline" asChild className="ml-2">
+              <Link href="/log-meal/manual">
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Food
+              </Link>
             </Button>
           </div>
-          <TabsContent value={activeTab} className="mt-4">
-            {activeTab === 'healthify-snap' ? (
-              <HealthifySnap onLogMeal={handleLogMeal} />
-            ) : (
-              <MealContent
-                mealTime={activeTab as MealTime}
-                loggedMeals={loggedMeals[activeTab as MealTime] || []}
-              />
-            )}
-          </TabsContent>
+          {mealTimes.map((meal) => (
+            <TabsContent key={meal.value} value={meal.value} className="mt-4">
+              {meal.value === 'healthify-snap' ? (
+                <HealthifySnap onLogMeal={handleLogMeal} />
+              ) : (
+                <MealContent
+                  mealTime={meal.value as MealTime}
+                  loggedMeals={loggedMeals[meal.value as MealTime] || []}
+                />
+              )}
+            </TabsContent>
+          ))}
         </Tabs>
       </div>
     </AppShell>

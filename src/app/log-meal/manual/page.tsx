@@ -59,7 +59,7 @@ export default function ManualLogMealPage() {
             <Button variant="outline" asChild>
                 <Link href="/log-meal">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Insights
+                    Back to Meal Logs
                 </Link>
             </Button>
         </PageHeader>
