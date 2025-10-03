@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { HealthifySnap } from '@/components/healthify-snap';
 import { MealContent } from '@/components/meal-content';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -19,6 +19,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth, useFirestore, useUser } from '@/firebase';
+import {
+  addDocumentNonBlocking,
+  useCollection,
+  useMemoFirebase,
+} from '@/firebase';
+import { collection, serverTimestamp, query, orderBy } from 'firebase/firestore';
 
 type FoodItem = {
   id: number;
@@ -30,7 +37,7 @@ type FoodItem = {
 };
 
 export type LoggedMeal = {
-  id: number;
+  id: string; // Firestore document ID
   items: FoodItem[];
   imageUrl?: string;
   totalNutrition: {
@@ -39,6 +46,8 @@ export type LoggedMeal = {
     carbohydrates: number;
     fat: number;
   };
+  mealTime: MealTime;
+  timestamp: any;
 };
 
 export type MealTime =
@@ -60,7 +69,44 @@ export default function LogMealLayout({
   const pathname = usePathname();
   const router = useRouter();
   const isMobile = useIsMobile();
-  const [nextMealId, setNextMealId] = useState(0);
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const mealsQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return query(
+      collection(firestore, 'users', user.uid, 'meals'),
+      orderBy('timestamp', 'desc')
+    );
+  }, [firestore, user]);
+
+  const { data: mealsFromDb } = useCollection<LoggedMeal>(mealsQuery);
+
+  const [loggedMeals, setLoggedMeals] = useState<MealData>({
+    breakfast: [],
+    morningSnack: [],
+    lunch: [],
+    eveningSnack: [],
+    dinner: [],
+  });
+
+  useEffect(() => {
+    if (mealsFromDb) {
+      const newMealData: MealData = {
+        breakfast: [],
+        morningSnack: [],
+        lunch: [],
+        eveningSnack: [],
+        dinner: [],
+      };
+      mealsFromDb.forEach((meal) => {
+        if (newMealData[meal.mealTime]) {
+          newMealData[meal.mealTime].push(meal);
+        }
+      });
+      setLoggedMeals(newMealData);
+    }
+  }, [mealsFromDb]);
 
   const mealTimes = [
     { value: 'breakfast', label: 'Breakfast' },
@@ -75,32 +121,23 @@ export default function LogMealLayout({
     mealTimes.find((tab) => pathname.includes(tab.value))?.value ||
     'morningSnack';
 
-  const [loggedMeals, setLoggedMeals] = useState<MealData>({
-    breakfast: [],
-    morningSnack: [],
-    lunch: [],
-    eveningSnack: [],
-    dinner: [],
-  });
-
   const handleLogMeal = (meal: {
     mealTime: MealTime;
     items: FoodItem[];
     totalNutrition: any;
     imageUrl?: string;
   }) => {
-    const newMeal: LoggedMeal = {
-      id: nextMealId,
-      items: meal.items,
-      totalNutrition: meal.totalNutrition,
-      imageUrl: meal.imageUrl,
-    };
-    setNextMealId(prev => prev + 1);
+    if (!user) return;
 
-    setLoggedMeals((prevMeals) => ({
-      ...prevMeals,
-      [meal.mealTime]: [...prevMeals[meal.mealTime], newMeal],
-    }));
+    const mealToLog = {
+      ...meal,
+      userId: user.uid,
+      timestamp: serverTimestamp(),
+    };
+
+    const mealsCol = collection(firestore, 'users', user.uid, 'meals');
+    addDocumentNonBlocking(mealsCol, mealToLog);
+
     router.push(`/log-meal/${meal.mealTime}`);
   };
 

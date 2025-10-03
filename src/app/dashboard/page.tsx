@@ -71,7 +71,7 @@ export default function DashboardPage() {
     <AppShell>
       <div className="flex flex-col gap-8">
         <PageHeader
-          title="Welcome Back, User!"
+          title="Welcome Back!"
           description="Here's a snapshot of your health and fitness journey today."
         />
 

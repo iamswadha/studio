@@ -4,12 +4,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   BarChart3,
-  Camera,
   HeartPulse,
   LayoutDashboard,
   LogOut,
   Settings,
-  User,
+  User as UserIcon,
   UtensilsCrossed,
 } from 'lucide-react';
 
@@ -37,6 +36,9 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useAuth, useUser } from '@/firebase';
+import { signOut } from 'firebase/auth';
+import { Skeleton } from './ui/skeleton';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -49,6 +51,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const userAvatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/signup');
+  };
 
   return (
     <SidebarProvider>
@@ -83,23 +92,52 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 variant="ghost"
                 className="w-full justify-start gap-3 p-2 h-auto"
               >
-                <Avatar className="h-9 w-9">
-                  {userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User avatar" />}
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
-                <div className="text-left group-data-[collapsible=icon]:hidden">
-                  <p className="font-medium text-sm">User</p>
-                  <p className="text-xs text-muted-foreground">
-                    user@example.com
-                  </p>
-                </div>
+                {isUserLoading ? (
+                  <>
+                    <Skeleton className="h-9 w-9 rounded-full" />
+                    <div className="flex flex-col gap-1.5">
+                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-3 w-32" />
+                    </div>
+                  </>
+                ) : user ? (
+                  <>
+                    <Avatar className="h-9 w-9">
+                      {user.photoURL ? (
+                        <AvatarImage src={user.photoURL} alt={user.displayName || ''} />
+                      ) : (
+                        userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User avatar" />
+                      )}
+                      <AvatarFallback>
+                        {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="text-left group-data-[collapsible=icon]:hidden">
+                      <p className="font-medium text-sm truncate">
+                        {user.displayName || 'User'}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                   <>
+                    <Avatar className="h-9 w-9">
+                      <AvatarFallback>U</AvatarFallback>
+                    </Avatar>
+                     <div className="text-left group-data-[collapsible=icon]:hidden">
+                      <p className="font-medium text-sm">Guest</p>
+                    </div>
+                   </>
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent side="right" align="start" className="w-56">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
+                <UserIcon className="mr-2 h-4 w-4" />
                 <span>Profile</span>
               </DropdownMenuItem>
               <DropdownMenuItem>
@@ -107,7 +145,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={() => router.push('/signup')}>
+              <DropdownMenuItem onSelect={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>
