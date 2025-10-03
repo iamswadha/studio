@@ -62,7 +62,7 @@ export default function ProgressPage() {
         />
 
         <Tabs defaultValue="weekly" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
+          <TabsList className="grid w-full max-w-[400px] grid-cols-2">
             <TabsTrigger value="weekly">Weekly Summary</TabsTrigger>
             <TabsTrigger value="monthly">Monthly Trends</TabsTrigger>
           </TabsList>
