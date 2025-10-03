@@ -126,16 +126,19 @@ export default function LogMealLayout({
     }
   }, [mealsFromDb]);
 
-  const mealTimes = [
+  const mealTabs = [
     { value: 'breakfast', label: 'Breakfast' },
     { value: 'morningSnack', label: 'Morning Snack' },
     { value: 'lunch', label: 'Lunch' },
     { value: 'eveningSnack', label: 'Evening Snack' },
     { value: 'dinner', label: 'Dinner' },
-    { value: 'healthify-snap', label: 'HealthifySnap' },
   ];
+  
+  const pageTabs = [
+    { value: 'healthify-snap', label: 'HealthifySnap', href: '/log-meal/healthify-snap'},
+  ]
 
-  const activeTab = pathname.split('/').pop() || 'breakfast';
+  const activeTabValue = pathname.split('/').pop() || 'breakfast';
 
   const handleLogMeal = (meal: {
     mealTime: MealTime;
@@ -154,12 +157,21 @@ export default function LogMealLayout({
     const mealsCol = collection(firestore, 'users', user.uid, 'meals');
     addDocumentNonBlocking(mealsCol, mealToLog);
 
-    router.push(`/log-meal/${meal.mealTime}`);
+    // After logging, switch to that meal's tab
+    router.push(`/log-meal`);
+    // The default tab will be 'breakfast' but the Tabs component will manage its own state
   };
 
   const handleTabChange = (value: string) => {
-    router.push(`/log-meal/${value}`);
+    // For tabs that are pages, navigate.
+    if(pageTabs.some(t => t.value === value)) {
+      router.push(`/log-meal/${value}`);
+    }
+    // For meal tabs, the Tabs component handles the state change itself.
   };
+
+  // Determine if the current page is a dedicated tab page like 'manual' or 'healthify-snap'
+  const isPageTab = ['manual', 'healthify-snap'].includes(activeTabValue);
 
   return (
     <AppShell>
@@ -168,56 +180,45 @@ export default function LogMealLayout({
           title="Today's Insights"
           description="Log your meals to get AI-powered insights and recommendations."
         />
+        {isPageTab ? (
+          // Render only the children for dedicated pages (manual, healthify-snap)
+          children
+        ) : (
+          <Tabs defaultValue="breakfast" className="w-full">
+            <div className="flex justify-between items-center">
+                <ScrollArea className="w-full whitespace-nowrap">
+                  <TabsList className="inline-flex">
+                    {mealTabs.map((meal) => (
+                      <TabsTrigger key={meal.value} value={meal.value}>
+                        {meal.label}
+                      </TabsTrigger>
+                    ))}
+                    {pageTabs.map((page) => (
+                       <TabsTrigger key={page.value} value={page.value} asChild>
+                         <Link href={page.href}>{page.label}</Link>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+              <Button variant="outline" asChild className="ml-2 shrink-0">
+                <Link href="/log-meal/manual">
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add Food
+                </Link>
+              </Button>
+            </div>
 
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <div className="flex justify-between items-center">
-            {isMobile ? (
-              <Select value={activeTab} onValueChange={handleTabChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a meal" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mealTimes.map((meal) => (
-                    <SelectItem key={meal.value} value={meal.value}>
-                      {meal.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <ScrollArea className="w-full whitespace-nowrap">
-                <TabsList className="inline-flex">
-                  {mealTimes.map((meal) => (
-                    <TabsTrigger key={meal.value} value={meal.value} asChild>
-                      <Link href={`/log-meal/${meal.value}`}>{meal.label}</Link>
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            )}
-            <Button variant="outline" asChild className="ml-2 shrink-0">
-              <Link href="/log-meal/manual">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Food
-              </Link>
-            </Button>
-          </div>
-
-          {mealTimes.map((meal) => (
-            <TabsContent key={meal.value} value={meal.value} className="mt-4">
-              {meal.value === 'healthify-snap' ? (
-                <HealthifySnap onLogMeal={handleLogMeal} />
-              ) : (
-                <MealContent
-                  mealTime={meal.value as MealTime}
-                  loggedMeals={loggedMeals[meal.value as MealTime] || []}
-                />
-              )}
-            </TabsContent>
-          ))}
-        </Tabs>
-         {/* This will render the content for /manual page */}
-        {activeTab === 'manual' && children}
+            {mealTabs.map((meal) => (
+              <TabsContent key={meal.value} value={meal.value} className="mt-4">
+                  <MealContent
+                    mealTime={meal.value as MealTime}
+                    loggedMeals={loggedMeals[meal.value as MealTime] || []}
+                  />
+              </TabsContent>
+            ))}
+            {/* The content for page tabs like healthify-snap is handled by their own page.tsx files */}
+          </Tabs>
+        )}
       </div>
     </AppShell>
   );

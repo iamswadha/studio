@@ -40,10 +40,10 @@ export default function ManualLogMealPage() {
     resolver: zodResolver(mealSchema),
     defaultValues: {
       foodName: '',
-      calories: undefined,
-      protein: undefined,
-      carbs: undefined,
-      fat: undefined,
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
     },
   });
 
@@ -57,111 +57,109 @@ export default function ManualLogMealPage() {
   }
 
   return (
-    <AppShell>
-      <div className="flex flex-col gap-8">
-         <PageHeader title="Log a Meal Manually">
-            <Button variant="outline" asChild>
-                <Link href="/log-meal">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Meal Logs
-                </Link>
-            </Button>
-        </PageHeader>
+    <>
+      <PageHeader title="Log a Meal Manually">
+        <Button variant="outline" asChild>
+          <Link href="/log-meal">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Meal Logs
+          </Link>
+        </Button>
+      </PageHeader>
 
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <CardTitle>Meal Details</CardTitle>
-            <CardDescription>
-              Enter the details of the meal you consumed.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <Card className="max-w-2xl">
+        <CardHeader>
+          <CardTitle>Meal Details</CardTitle>
+          <CardDescription>
+            Enter the details of the meal you consumed.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="foodName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Food / Meal Name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g., Grilled Chicken Salad"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      You can search our database in a future version!
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
-                  name="foodName"
+                  name="calories"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Food / Meal Name</FormLabel>
+                      <FormLabel>Calories (kcal)</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="e.g., Grilled Chicken Salad"
-                          {...field}
-                        />
+                        <Input type="number" placeholder="e.g., 450" {...field} value={field.value ?? ''} />
                       </FormControl>
-                      <FormDescription>
-                        You can search our database in a future version!
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="protein"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Protein (g)</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="e.g., 30" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="carbs"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Carbohydrates (g)</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="e.g., 20" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="fat"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Fat (g)</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="e.g., 15" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="calories"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Calories (kcal)</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="e.g., 450" {...field} value={field.value ?? ''} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="protein"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Protein (g)</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="e.g., 30" {...field} value={field.value ?? ''} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="carbs"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Carbohydrates (g)</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="e.g., 20" {...field} value={field.value ?? ''} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="fat"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Fat (g)</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="e.g., 15" {...field} value={field.value ?? ''} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <Button type="submit" size="lg" className="w-full !mt-8">
-                  <Utensils className="mr-2 h-4 w-4" />
-                  Log Meal
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
-    </AppShell>
+              <Button type="submit" size="lg" className="w-full !mt-8">
+                <Utensils className="mr-2 h-4 w-4" />
+                Log Meal
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+    </>
   );
 }

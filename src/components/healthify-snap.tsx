@@ -25,6 +25,7 @@ import {
   PlusCircle,
   Pencil,
   X,
+  ArrowLeft,
 } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useRef, useMemo, useCallback } from 'react';
@@ -37,6 +38,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { PageHeader } from './page-header';
+import Link from 'next/link';
 
 type FoodItem = {
   id: number;
@@ -381,125 +384,135 @@ export function HealthifySnap({
   );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-      <Card>
-        <form onSubmit={handleFormSubmit}>
-          <CardHeader>
-            <CardTitle>Upload Your Meal</CardTitle>
-            <CardDescription>
-              Snap a photo of your meal and let our AI do the rest. Effortless
-              calorie and nutrient tracking is here.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="meal-photo">Meal Photo</Label>
-              <Input
-                id="meal-photo"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                ref={fileInputRef}
-                className="file:text-primary file:font-semibold"
-              />
-            </div>
-            {preview && (
-              <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
-                <Image
-                  src={preview}
-                  alt="Meal preview"
-                  fill
-                  className="object-cover"
+    <>
+      <PageHeader title="HealthifySnap">
+          <Button variant="outline" asChild>
+              <Link href="/log-meal">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Meal Logs
+              </Link>
+          </Button>
+      </PageHeader>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <Card>
+          <form onSubmit={handleFormSubmit}>
+            <CardHeader>
+              <CardTitle>Upload Your Meal</CardTitle>
+              <CardDescription>
+                Snap a photo of your meal and let our AI do the rest. Effortless
+                calorie and nutrient tracking is here.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="meal-photo">Meal Photo</Label>
+                <Input
+                  id="meal-photo"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  ref={fileInputRef}
+                  className="file:text-primary file:font-semibold"
                 />
               </div>
-            )}
-          </CardContent>
-          <CardFooter>
-            <Button
-              type="submit"
-              disabled={!preview || isLoading}
-              className="w-full"
-              size="lg"
-            >
-              {isLoading && foodItems.length === 0 ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Camera className="mr-2 h-4 w-4" />
+              {preview && (
+                <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
+                  <Image
+                    src={preview}
+                    alt="Meal preview"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
               )}
-              {isLoading && foodItems.length === 0
-                ? 'Analyzing...'
-                : 'Analyze Meal'}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
-
-      <Card className="sticky top-24">
-        <CardHeader>
-          <CardTitle>Analysis Results</CardTitle>
-          <CardDescription>
-            Here's what our AI found in your meal. You can edit items before
-            logging.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading && foodItems.length === 0 && (
-            <div className="flex flex-col items-center justify-center gap-4 text-center p-8">
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
-              <p className="font-semibold">Analyzing your meal...</p>
-              <p className="text-sm text-muted-foreground">
-                This might take a moment. Our AI is hard at work!
-              </p>
-            </div>
-          )}
-          {error && !isLoading && (
-            <div className="text-destructive text-center p-8">
-              <p className="font-bold">Oops! Something went wrong.</p>
-              <p className="text-sm">{error}</p>
-            </div>
-          )}
-          {!isLoading && foodItems.length === 0 && !error && (
-            <div className="text-center p-8 text-muted-foreground">
-              <p>Upload a photo to see the nutritional analysis.</p>
-            </div>
-          )}
-          {foodItems.length > 0 && <AnalysisResults />}
-        </CardContent>
-        {foodItems.length > 0 && (
-          <CardFooter className="flex-col gap-4 items-stretch">
-            <div className="space-y-2">
-              <Label htmlFor="meal-time">Log this meal as:</Label>
-              <Select
-                value={mealTime}
-                onValueChange={(v) => setMealTime(v as MealTime)}
+            </CardContent>
+            <CardFooter>
+              <Button
+                type="submit"
+                disabled={!preview || isLoading}
+                className="w-full"
+                size="lg"
               >
-                <SelectTrigger id="meal-time">
-                  <SelectValue placeholder="Select meal time" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="breakfast">Breakfast</SelectItem>
-                  <SelectItem value="morningSnack">Morning Snack</SelectItem>
-                  <SelectItem value="lunch">Lunch</SelectItem>
-                  <SelectItem value="eveningSnack">Evening Snack</SelectItem>
-                  <SelectItem value="dinner">Dinner</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button
-              onClick={handleLogMealClick}
-              className="w-full"
-              variant="secondary"
-              disabled={isLoading}
-            >
-              {isLoading && foodItems.some((item) => item.calories === 0) ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                'Log This Meal'
-              )}
-            </Button>
-          </CardFooter>
-        )}
-      </Card>
-    </div>
+                {isLoading && foodItems.length === 0 ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Camera className="mr-2 h-4 w-4" />
+                )}
+                {isLoading && foodItems.length === 0
+                  ? 'Analyzing...'
+                  : 'Analyze Meal'}
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+
+        <Card className="sticky top-24">
+          <CardHeader>
+            <CardTitle>Analysis Results</CardTitle>
+            <CardDescription>
+              Here's what our AI found in your meal. You can edit items before
+              logging.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading && foodItems.length === 0 && (
+              <div className="flex flex-col items-center justify-center gap-4 text-center p-8">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                <p className="font-semibold">Analyzing your meal...</p>
+                <p className="text-sm text-muted-foreground">
+                  This might take a moment. Our AI is hard at work!
+                </p>
+              </div>
+            )}
+            {error && !isLoading && (
+              <div className="text-destructive text-center p-8">
+                <p className="font-bold">Oops! Something went wrong.</p>
+                <p className="text-sm">{error}</p>
+              </div>
+            )}
+            {!isLoading && foodItems.length === 0 && !error && (
+              <div className="text-center p-8 text-muted-foreground">
+                <p>Upload a photo to see the nutritional analysis.</p>
+              </div>
+            )}
+            {foodItems.length > 0 && <AnalysisResults />}
+          </CardContent>
+          {foodItems.length > 0 && (
+            <CardFooter className="flex-col gap-4 items-stretch">
+              <div className="space-y-2">
+                <Label htmlFor="meal-time">Log this meal as:</Label>
+                <Select
+                  value={mealTime}
+                  onValueChange={(v) => setMealTime(v as MealTime)}
+                >
+                  <SelectTrigger id="meal-time">
+                    <SelectValue placeholder="Select meal time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="breakfast">Breakfast</SelectItem>
+                    <SelectItem value="morningSnack">Morning Snack</SelectItem>
+                    <SelectItem value="lunch">Lunch</SelectItem>
+                    <SelectItem value="eveningSnack">Evening Snack</SelectItem>
+                    <SelectItem value="dinner">Dinner</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                onClick={handleLogMealClick}
+                className="w-full"
+                variant="secondary"
+                disabled={isLoading}
+              >
+                {isLoading && foodItems.some((item) => item.calories === 0) ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  'Log This Meal'
+                )}
+              </Button>
+            </CardFooter>
+          )}
+        </Card>
+      </div>
+    </>
   );
 }
