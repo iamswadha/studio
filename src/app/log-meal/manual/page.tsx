@@ -40,6 +40,10 @@ export default function ManualLogMealPage() {
     resolver: zodResolver(mealSchema),
     defaultValues: {
       foodName: '',
+      calories: undefined,
+      protein: undefined,
+      carbs: undefined,
+      fat: undefined,
     },
   });
 
@@ -102,7 +106,7 @@ export default function ManualLogMealPage() {
                       <FormItem>
                         <FormLabel>Calories (kcal)</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="e.g., 450" {...field} />
+                          <Input type="number" placeholder="e.g., 450" {...field} value={field.value ?? ''} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -115,7 +119,7 @@ export default function ManualLogMealPage() {
                       <FormItem>
                         <FormLabel>Protein (g)</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="e.g., 30" {...field} />
+                          <Input type="number" placeholder="e.g., 30" {...field} value={field.value ?? ''} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -128,7 +132,7 @@ export default function ManualLogMealPage() {
                       <FormItem>
                         <FormLabel>Carbohydrates (g)</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="e.g., 20" {...field} />
+                          <Input type="number" placeholder="e.g., 20" {...field} value={field.value ?? ''} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -141,7 +145,7 @@ export default function ManualLogMealPage() {
                       <FormItem>
                         <FormLabel>Fat (g)</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="e.g., 15" {...field} />
+                          <Input type="number" placeholder="e.g., 15" {...field} value={field.value ?? ''} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
