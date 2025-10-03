@@ -20,6 +20,7 @@ import {
 import { getFoodSuggestions } from '@/lib/actions';
 import { useDebounce } from '@/hooks/use-debounce';
 import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 type Suggestion = {
   name: string;
@@ -27,7 +28,7 @@ type Suggestion = {
 };
 
 interface FoodSearchComboboxProps {
-  onSelect: (value: string) => void;
+  onSelect: (suggestion: Suggestion) => void;
   defaultValue?: string;
 }
 
@@ -42,7 +43,10 @@ export function FoodSearchCombobox({
   const [isLoading, setIsLoading] = React.useState(false);
   const debouncedSearch = useDebounce(search, 500);
 
-  const fallbackImage = 'https://picsum.photos/seed/food-fallback/100/100';
+  const fallbackImage = PlaceHolderImages.find(
+    (img) => img.id === 'food-suggestion-fallback'
+  )?.imageUrl || 'https://picsum.photos/seed/food-fallback/100/100';
+
 
   React.useEffect(() => {
     if (debouncedSearch && debouncedSearch.length > 2) {
@@ -60,13 +64,24 @@ export function FoodSearchCombobox({
     }
   }, [debouncedSearch]);
 
-  const handleSelect = (currentValue: string) => {
-    const newValue = currentValue === value ? '' : currentValue;
-    setValue(newValue);
-    setSearch(newValue); // Also update search input to reflect selection
-    onSelect(newValue);
+  const handleSelect = (suggestion: Suggestion) => {
+    setValue(suggestion.name);
+    setSearch(suggestion.name); // Also update search input to reflect selection
+    onSelect(suggestion);
     setOpen(false);
   };
+  
+  const handleAddNewItem = (itemName: string) => {
+    const newItem: Suggestion = {
+      name: itemName,
+      imageUrl: fallbackImage,
+    };
+    setValue(newItem.name);
+    setSearch(newItem.name);
+    onSelect(newItem);
+    setOpen(false);
+  };
+
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -101,7 +116,7 @@ export function FoodSearchCombobox({
                   <Button
                     variant="link"
                     className="mt-2"
-                    onClick={() => handleSelect(debouncedSearch)}
+                    onClick={() => handleAddNewItem(debouncedSearch)}
                   >
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Add "{debouncedSearch}" as new item
@@ -114,7 +129,7 @@ export function FoodSearchCombobox({
                 <CommandItem
                   key={suggestion.name}
                   value={suggestion.name}
-                  onSelect={handleSelect}
+                  onSelect={() => handleSelect(suggestion)}
                 >
                   <Check
                     className={cn(

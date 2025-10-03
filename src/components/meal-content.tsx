@@ -51,7 +51,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
     deleteDocumentNonBlocking(mealDocRef);
   };
 
-  const handleAddFood = async (foodName: string) => {
+  const handleAddFood = async (suggestion: { name: string, imageUrl: string }) => {
     if (!user) {
       toast({
         variant: 'destructive',
@@ -62,7 +62,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
     }
     setIsAddingFood(true);
     
-    const nutrition = await getSingleItemNutrition({ foodItemName: foodName });
+    const nutrition = await getSingleItemNutrition({ foodItemName: suggestion.name });
     if (!nutrition.success || !nutrition.data) {
         toast({
             variant: 'destructive',
@@ -75,12 +75,12 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
 
     const mealTimestamp = startOfDay(currentDate);
 
-    const newMeal = {
+    const newMeal: Omit<LoggedMeal, 'id'> & { userId: string } = {
       mealTime: mealTime,
       items: [
         {
           id: Date.now(),
-          name: foodName,
+          name: suggestion.name,
           calories: nutrition.data.calories,
           protein: nutrition.data.protein,
           carbohydrates: nutrition.data.carbohydrates,
@@ -93,6 +93,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
         carbohydrates: nutrition.data.carbohydrates,
         fat: nutrition.data.fat,
       },
+      imageUrl: suggestion.imageUrl,
       userId: user.uid,
       timestamp: Timestamp.fromDate(mealTimestamp),
     };
@@ -102,7 +103,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
     
     toast({
       title: 'Meal Logged!',
-      description: `${foodName} has been added to your ${mealTime} log.`,
+      description: `${suggestion.name} has been added to your ${mealTime} log.`,
     });
     setIsAddingFood(false);
   }
