@@ -2,15 +2,8 @@
 
 import { AppShell } from '@/components/app-shell';
 import { PageHeader } from '@/components/page-header';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-} from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Camera, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 
 export default function LogMealLayout({
@@ -48,9 +41,11 @@ export default function LogMealLayout({
                 </TabsTrigger>
             ))}
           </TabsList>
-          <TabsContent value={activeTab}>
-            {children}
-          </TabsContent>
+            <TabsContent value="breakfast">{children}</TabsContent>
+            <TabsContent value="morningSnack">{children}</TabsContent>
+            <TabsContent value="lunch">{children}</TabsContent>
+            <TabsContent value="eveningSnack">{children}</TabsContent>
+            <TabsContent value="dinner">{children}</TabsContent>
         </Tabs>
       </div>
     </AppShell>
