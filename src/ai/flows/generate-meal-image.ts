@@ -41,9 +41,9 @@ const generateMealImageFlow = ai.defineFlow(
   async input => {
     const {media} = await ai.generate({
       model: 'googleai/imagen-4.0-fast-generate-001',
-      prompt: `Generate a 3D, aesthetic, high-resolution PNG image of a modern aluminum beverage can with a transparent background. The can should have a clean, minimalist design inspired by the primary ingredient: ${input.foodItems.join(
-        ', '
-      )}. The label should feature a stylized 'P' logo and the flavor name. The color palette of the can should reflect the fruit. For example, a strawberry juice can should be reddish-pink.`,
+      prompt: `Generate a high-quality, photorealistic image of a meal on a clean white plate.
+      The meal consists of the following items: ${input.foodItems.join(', ')}.
+      The image should be well-lit, appetizing, and look like it was taken for a food blog.`,
     });
 
     if (!media.url) {

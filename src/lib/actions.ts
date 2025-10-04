@@ -9,17 +9,17 @@ import {
   type FoodItemNutritionInput,
 } from '@/ai/flows/get-food-item-nutrition';
 import {
-  getFoodSuggestions as getFoodSuggestionsFlow,
+  getFoodSuggestions,
   type FoodSuggestionsInput,
 } from '@/ai/flows/get-food-suggestions';
+import {
+  getIndianFoodSuggestions as getIndianFoodSuggestionsFlow,
+  type IndianFoodSuggestionsInput,
+} from '@/ai/flows/get-indian-food-suggestions';
 import {
     generateMealImage,
     type GenerateMealImageInput,
 } from '@/ai/flows/generate-meal-image';
-import {
-    getJuiceSuggestions as getJuiceSuggestionsFlow,
-    type JuiceSuggestionsInput,
-} from '@/ai/flows/get-juice-suggestions';
 
 export async function getMealAnalysis(input: LogMealsWithHealthifySnapInput) {
   try {
@@ -51,13 +51,29 @@ export async function getSingleItemNutrition(input: FoodItemNutritionInput) {
 
 export async function getFoodSuggestions(input: FoodSuggestionsInput) {
   try {
-    const result = await getFoodSuggestionsFlow(input);
+    const result = await getFoodSuggestions(input);
     return { success: true, data: result };
   } catch (error) {
     console.error('Error in getFoodSuggestions:', error);
     return {
       success: false,
       error: 'Failed to get food suggestions. The AI model might be unavailable. Please try again later.',
+    };
+  }
+}
+
+export async function getIndianFoodSuggestions(
+  input: IndianFoodSuggestionsInput
+) {
+  try {
+    const result = await getIndianFoodSuggestionsFlow(input);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Error in getIndianFoodSuggestions:', error);
+    return {
+      success: false,
+      error:
+        'Failed to get Indian food suggestions. The AI model might be unavailable. Please try again later.',
     };
   }
 }
@@ -73,17 +89,4 @@ export async function generateMealImageAction(input: GenerateMealImageInput) {
         error: 'Failed to generate meal image. Please try again later.',
         };
     }
-}
-
-export async function getJuiceSuggestions(input: JuiceSuggestionsInput) {
-  try {
-    const result = await getJuiceSuggestionsFlow(input);
-    return { success: true, data: result };
-  } catch (error) {
-    console.error('Error in getJuiceSuggestions:', error);
-    return {
-      success: false,
-      error: 'Failed to get juice suggestions. The AI model might be unavailable. Please try again later.',
-    };
-  }
 }

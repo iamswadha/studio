@@ -1,87 +1,63 @@
 'use client';
 import { useState } from 'react';
 import { AppShell } from '@/components/app-shell';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { PageHeader } from '@/components/page-header';
 import {
-  Search,
-  ShoppingBag,
-  Carrot,
-  Apple,
-  Banana,
-  Grape,
-} from 'lucide-react';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { JuiceCard } from '@/components/juice-card';
-import { getJuiceSuggestions } from '@/lib/actions';
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
+import { FoodCard } from '@/components/food-card';
+import { getIndianFoodSuggestions } from '@/lib/actions';
 import { useQuery } from '@tanstack/react-query';
-
-const categories = [
-  { name: 'Avocado', icon: Carrot, color: 'bg-green-100 text-green-800' },
-  { name: 'Mango', icon: Carrot, color: 'bg-yellow-100 text-yellow-800' },
-  { name: 'Apple', icon: Apple, color: 'bg-red-100 text-red-800' },
-  { name: 'Grapes', icon: Grape, color: 'bg-purple-100 text-purple-800' },
-  { name: 'Banana', icon: Banana, color: 'bg-yellow-100 text-yellow-800' },
-];
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function FoodMenuPage() {
-  const [activeCategory, setActiveCategory] = useState('Apple');
-  
-  const { data: juiceSuggestions, isLoading } = useQuery({
-    queryKey: ['juiceSuggestions'],
-    queryFn: () => getJuiceSuggestions({ query: 'fruit juice' }),
+  const { data: foodSuggestions, isLoading } = useQuery({
+    queryKey: ['indianFoodSuggestions'],
+    queryFn: () => getIndianFoodSuggestions({ query: 'popular' }),
   });
 
-
   return (
-    <div className="flex flex-col h-full bg-background rounded-3xl p-4">
-      {/* Header */}
-      <header className="flex items-center justify-between py-4">
-        <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input placeholder="Search juice..." className="pl-10 bg-input rounded-full" />
+    <AppShell>
+      <div className="flex flex-col gap-8">
+        <PageHeader
+          title="Chipotto Cafe"
+          description="Find your favorite meal"
+        ></PageHeader>
+        <div className="w-full max-w-4xl mx-auto">
+          {isLoading ? (
+             <div className="flex items-center justify-center h-96">
+                <Skeleton className="w-full h-full" />
+             </div>
+          ) : (
+            <Carousel
+              opts={{
+                align: 'center',
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent>
+                {foodSuggestions?.data?.suggestions.map((food, index) => (
+                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                    <FoodCard
+                      name={food.name}
+                      description="A delicious and healthy meal option."
+                      image={food.imageUrl}
+                      imageHint="indian food"
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious className="hidden sm:flex" />
+              <CarouselNext className="hidden sm:flex" />
+            </Carousel>
+          )}
         </div>
-        <Button variant="ghost" size="icon" className="ml-2">
-          <ShoppingBag className="h-6 w-6" />
-        </Button>
-      </header>
-
-      {/* Category Filters */}
-      <div className="py-4">
-        <ScrollArea className="w-full whitespace-nowrap">
-          <div className="flex gap-3">
-            {categories.map((category) => (
-              <Button
-                key={category.name}
-                variant={activeCategory === category.name ? 'default' : 'secondary'}
-                className="rounded-full flex items-center gap-2"
-                onClick={() => setActiveCategory(category.name)}
-              >
-                <div
-                  className={`p-1.5 rounded-full ${category.color}`}
-                >
-                  <category.icon className="h-4 w-4" />
-                </div>
-                <span className={activeCategory === category.name ? 'text-primary-foreground' : ''}>
-                  {category.name}
-                </span>
-              </Button>
-            ))}
-          </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
       </div>
-
-      {/* Juice List */}
-      <main className="flex-1 overflow-y-auto space-y-4">
-        {isLoading ? (
-          <p>Loading juices...</p>
-        ) : (
-          juiceSuggestions?.data?.suggestions.map((juice, index) => (
-            <JuiceCard key={index} {...juice} />
-          ))
-        )}
-      </main>
-    </div>
+    </AppShell>
   );
 }
