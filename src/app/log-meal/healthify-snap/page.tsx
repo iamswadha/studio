@@ -4,7 +4,6 @@ import { useFirestore, useUser, addDocumentNonBlocking } from "@/firebase";
 import { useRouter, useSearchParams } from "next/navigation";
 import { collection, Timestamp } from "firebase/firestore";
 import type { MealTime } from "../layout";
-import { generateMealImageAction } from "@/lib/actions";
 
 type FoodItem = {
     id: number;
@@ -27,21 +26,11 @@ export default function HealthifySnapPage() {
         mealTime: MealTime;
         items: FoodItem[];
         totalNutrition: any;
+        imageUrl?: string;
     }) => {
         if (!user || !meal.mealTime) return;
 
         const selectedDate = dateParam ? new Date(dateParam) : new Date();
-        
-        let generatedImageUrl: string | undefined = undefined;
-        try {
-            const imageResponse = await generateMealImageAction({ foodItems: meal.items.map(i => i.name) });
-            if (imageResponse.success && imageResponse.data) {
-                generatedImageUrl = imageResponse.data.imageUrl;
-            }
-        } catch (e) {
-            console.error("Failed to generate meal image", e);
-        }
-
 
         const mealToLog = {
             userId: user.uid,
@@ -49,7 +38,7 @@ export default function HealthifySnapPage() {
             mealTime: meal.mealTime,
             items: meal.items,
             totalNutrition: meal.totalNutrition,
-            imageUrl: generatedImageUrl,
+            imageUrl: meal.imageUrl,
         };
 
         const mealsCol = collection(firestore, 'users', user.uid, 'meals');

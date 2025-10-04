@@ -65,6 +65,7 @@ export function HealthifySnap({
     mealTime: MealTime;
     items: FoodItem[];
     totalNutrition: any;
+    imageUrl?: string;
   }) => Promise<void>;
 }) {
   const [preview, setPreview] = useState<string | null>(null);
@@ -173,6 +174,7 @@ export function HealthifySnap({
           mealTime,
           items: foodItems,
           totalNutrition,
+          imageUrl: preview || undefined,
         });
 
         toast({
@@ -403,9 +405,9 @@ export function HealthifySnap({
     <>
       <PageHeader title="HealthifySnap">
           <Button variant="outline" asChild>
-              <Link href="/log-meal">
+              <Link href="/dashboard">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Meal Logs
+                  Back to Diary
               </Link>
           </Button>
       </PageHeader>
