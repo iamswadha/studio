@@ -9,9 +9,9 @@ import {
   type FoodItemNutritionInput,
 } from '@/ai/flows/get-food-item-nutrition';
 import {
-  getIndianFoodSuggestions,
-  type IndianFoodSuggestionsInput,
-} from '@/ai/flows/get-indian-food-suggestions';
+  getFoodSuggestions as getFoodSuggestionsFlow,
+  type FoodSuggestionsInput,
+} from '@/ai/flows/get-food-suggestions';
 
 export async function getMealAnalysis(input: LogMealsWithHealthifySnapInput) {
   try {
@@ -41,9 +41,9 @@ export async function getSingleItemNutrition(input: FoodItemNutritionInput) {
   }
 }
 
-export async function getFoodSuggestions(input: IndianFoodSuggestionsInput) {
+export async function getFoodSuggestions(input: FoodSuggestionsInput) {
   try {
-    const result = await getIndianFoodSuggestions(input);
+    const result = await getFoodSuggestionsFlow(input);
     return { success: true, data: result };
   } catch (error) {
     console.error('Error in getFoodSuggestions:', error);

@@ -110,7 +110,7 @@ export function FoodSearchCombobox({
       <PopoverContent className="w-[300px] p-0">
         <Command shouldFilter={false}>
           <CommandInput
-            placeholder="Search for Indian food..."
+            placeholder="Search for food..."
             value={search}
             onValueChange={setSearch}
           />
