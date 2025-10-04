@@ -14,7 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Search, Grid } from 'lucide-react';
+import { Search, Grid, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   useUser,
@@ -186,38 +186,6 @@ export default function FoodMenuPage() {
           </nav>
 
           <main className="flex-1 flex flex-col gap-8">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-[500px]">
-                <Skeleton className="w-full h-full" />
-              </div>
-            ) : (
-              <Carousel
-                opts={{
-                  align: 'start',
-                  loop: false,
-                }}
-                className="w-full"
-              >
-                <CarouselContent className="-ml-10">
-                  {foodSuggestions?.data?.suggestions.map((food, index) => (
-                    <CarouselItem
-                      key={index}
-                      className="md:basis-1/2 lg:basis-3/4 pl-10"
-                    >
-                      <FoodCard
-                        name={food.name}
-                        description="A salad is a dish consisting of a mixture of small pieces of food, usually vegetables."
-                        image={food.imageUrl}
-                        imageHint="plated food"
-                      />
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="hidden" />
-                <CarouselNext className="hidden" />
-              </Carousel>
-            )}
-
             <div className="flex justify-center items-center gap-4">
               {mealTabs.map((meal) => (
                 <Button
