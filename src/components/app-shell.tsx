@@ -8,7 +8,6 @@ import {
   LineChart,
   User,
   LogOut,
-  Menu,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -66,6 +65,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
+       <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur-sm">
+        <div className="container mx-auto flex h-14 items-center justify-between">
+           <Logo />
+          <Button variant="ghost" size="sm" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
+        </div>
+      </header>
       <div className="flex flex-1 flex-col">
         <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
 
@@ -79,10 +87,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 label={item.label}
               />
             ))}
-             <Button variant="ghost" size="icon" onClick={handleLogout} className="flex-1 flex flex-col items-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-primary h-auto w-auto">
-                <LogOut className="h-6 w-6" />
-                <span className="text-xs font-medium">Logout</span>
-             </Button>
           </nav>
         </footer>
       </div>
