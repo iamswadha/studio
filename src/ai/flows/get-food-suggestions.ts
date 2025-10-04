@@ -44,7 +44,7 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert on food and nutrition. The user is searching for food items.
 Based on their query: {{{query}}}, provide a list of 5 relevant food suggestions.
 This can include fruits, vegetables, cooked meals, etc.
-For each suggestion, provide a realistic and appealing image URL. You can use Unsplash for images.
+For each suggestion, provide a URL for an aesthetic, 3D-style PNG image of the food item on a transparent background, suitable for a modern UI. You can use DALL-E 3 prompts that would generate such an image, and use a placeholder image service that can fulfill these prompts.
 `,
 });
 

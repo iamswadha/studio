@@ -10,6 +10,7 @@ import {
   Settings,
   User as UserIcon,
   UtensilsCrossed,
+  ShoppingBasket,
 } from 'lucide-react';
 
 import {
@@ -44,6 +45,7 @@ import { ThemeToggle } from './theme-toggle';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/food-menu', icon: ShoppingBasket, label: 'Food Menu' },
   { href: '/activity', icon: HeartPulse, label: 'Activity' },
   { href: '/log-meal', icon: UtensilsCrossed, label: 'Log Meal' },
   { href: '/progress', icon: BarChart3, label: 'Progress' },
