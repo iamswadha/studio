@@ -24,6 +24,8 @@ import {
 import { getFirebase } from '@/firebase-server';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { startOfTomorrow } from 'date-fns';
+import { headers } from 'next/headers';
+
 
 export async function getMealAnalysis(input: LogMealsWithHealthifySnapInput) {
   try {
@@ -99,7 +101,16 @@ export async function generateMealImageAction(input: GenerateMealImageInput) {
 export async function planMealForTomorrow(meal: { name: string; imageUrl: string; description: string; }) {
     try {
         const { auth, firestore } = await getFirebase();
-        const user = auth.currentUser;
+        
+        const headersList = headers();
+        const userToken = headersList.get('X-Firebase-AppCheck');
+
+        if (!userToken) {
+           return { success: false, error: "You must be logged in to plan a meal." };
+        }
+        
+        const decodedToken = await auth.verifyIdToken(userToken);
+        const user = await auth.getUser(decodedToken.uid);
 
         if (!user) {
             return { success: false, error: "You must be logged in to plan a meal." };

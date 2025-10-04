@@ -44,9 +44,11 @@ export default function HealthifySnapPage() {
 
 
         const mealToLog = {
-            ...meal,
             userId: user.uid,
             timestamp: Timestamp.fromDate(selectedDate),
+            mealTime: meal.mealTime,
+            items: meal.items,
+            totalNutrition: meal.totalNutrition,
             imageUrl: generatedImageUrl,
         };
 
