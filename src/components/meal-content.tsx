@@ -10,10 +10,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Separator } from './ui/separator';
 import type { LoggedMeal, MealTime } from '@/app/log-meal/layout';
-import { useFirestore, useUser, deleteDocumentNonBlocking, addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase';
-import { doc, collection, Timestamp, writeBatch } from 'firebase/firestore';
+import { useFirestore, useUser, deleteDocumentNonBlocking } from '@/firebase';
+import { doc } from 'firebase/firestore';
 import { FoodSearchCombobox } from './food-search-combobox';
-import { getSingleItemNutrition } from '@/lib/actions';
+import { getSingleItemNutrition, logMeal } from '@/lib/actions';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -78,41 +78,13 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
         fat: nutrition.data.fat,
         imageUrl: suggestion.imageUrl,
     };
-
-    const firstMealForTime = loggedMeals.length > 0 ? loggedMeals[0] : null;
-
-    if (firstMealForTime) {
-        // Add to existing meal
-        const mealDocRef = doc(firestore, 'users', user.uid, 'meals', firstMealForTime.id);
-        const newItems = [...firstMealForTime.items, newItem];
-        const newTotalNutrition = {
-            calories: firstMealForTime.totalNutrition.calories + newItem.calories,
-            protein: firstMealForTime.totalNutrition.protein + newItem.protein,
-            carbohydrates: firstMealForTime.totalNutrition.carbohydrates + newItem.carbohydrates,
-            fat: firstMealForTime.totalNutrition.fat + newItem.fat,
-        };
-        updateDocumentNonBlocking(mealDocRef, {
-            items: newItems,
-            totalNutrition: newTotalNutrition,
-        });
-
-    } else {
-        // Create a new meal document
-        const newMeal = {
-            mealTime: mealTime,
-            items: [newItem],
-            totalNutrition: {
-                calories: newItem.calories,
-                protein: newItem.protein,
-                carbohydrates: newItem.carbohydrates,
-                fat: newItem.fat,
-            },
-            userId: user.uid,
-            timestamp: Timestamp.fromDate(currentDate),
-        };
-        const mealsCol = collection(firestore, 'users', user.uid, 'meals');
-        addDocumentNonBlocking(mealsCol, newMeal);
-    }
+    
+    await logMeal({
+      userId: user.uid,
+      mealTime: mealTime,
+      date: currentDate.toISOString(),
+      items: [newItem],
+    });
     
     toast({
       title: 'Food Added!',

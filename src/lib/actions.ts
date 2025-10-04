@@ -25,6 +25,7 @@ import { getFirebase } from '@/firebase-server';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { startOfTomorrow } from 'date-fns';
 import { headers } from 'next/headers';
+import { logMealFlow, type LogMealInput } from '@/ai/flows/log-meal';
 
 
 export async function getMealAnalysis(input: LogMealsWithHealthifySnapInput) {
@@ -133,4 +134,16 @@ export async function planMealForTomorrow(meal: { name: string; imageUrl: string
         console.error("Error planning meal:", error);
         return { success: false, error: "Could not save the planned meal. Please try again." };
     }
+}
+
+export async function logMeal(input: Omit<LogMealInput, 'userId'>) {
+    const { auth } = await getFirebase();
+    const headersList = headers();
+    const userToken = headersList.get('X-Firebase-AppCheck');
+    if (!userToken) {
+        throw new Error('User is not authenticated.');
+    }
+    const decodedToken = await auth.verifyIdToken(userToken);
+    
+    return logMealFlow({ ...input, userId: decodedToken.uid });
 }

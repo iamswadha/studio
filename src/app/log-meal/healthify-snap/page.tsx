@@ -1,8 +1,8 @@
 'use client';
 import { HealthifySnap } from "@/components/healthify-snap";
-import { useFirestore, useUser, addDocumentNonBlocking } from "@/firebase";
 import { useRouter, useSearchParams } from "next/navigation";
-import { collection, Timestamp } from "firebase/firestore";
+import { logMeal } from "@/lib/actions";
+import { useUser } from "@/firebase";
 import type { MealTime } from "../layout";
 
 type FoodItem = {
@@ -17,7 +17,6 @@ type FoodItem = {
 export default function HealthifySnapPage() {
     const router = useRouter();
     const { user } = useUser();
-    const firestore = useFirestore();
     const searchParams = useSearchParams();
     const dateParam = searchParams.get('date');
 
@@ -28,21 +27,17 @@ export default function HealthifySnapPage() {
         totalNutrition: any;
         imageUrl?: string;
     }) => {
-        if (!user || !meal.mealTime || !firestore) return;
+        if (!user || !meal.mealTime) return;
 
         const selectedDate = dateParam ? new Date(dateParam) : new Date();
 
-        const mealToLog = {
+        await logMeal({
             userId: user.uid,
-            timestamp: Timestamp.fromDate(selectedDate),
             mealTime: meal.mealTime,
+            date: selectedDate.toISOString(),
             items: meal.items,
-            totalNutrition: meal.totalNutrition,
             imageUrl: meal.imageUrl,
-        };
-
-        const mealsCol = collection(firestore, 'users', user.uid, 'meals');
-        addDocumentNonBlocking(mealsCol, mealToLog);
+        });
 
         router.push(`/dashboard`);
     };
