@@ -29,7 +29,7 @@ const FoodItemSchema = z.object({
   imageUrl: z.string().optional(),
 });
 
-export const LogMealInputSchema = z.object({
+const LogMealInputSchema = z.object({
   userId: z.string().describe('The UID of the user logging the meal.'),
   mealTime: z
     .enum(['breakfast', 'morningSnack', 'lunch', 'eveningSnack', 'dinner'])
