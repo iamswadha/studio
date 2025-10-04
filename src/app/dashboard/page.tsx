@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react';
 import { AppShell } from '@/components/app-shell';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Search, Grid, Filter } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Search, Grid } from 'lucide-react';
 import {
   useUser,
   useFirestore,
@@ -105,9 +104,11 @@ export default function DashboardPage() {
     { value: 'breakfast', label: 'Breakfast' },
     { value: 'morningSnack', label: 'Morning Snack' },
     { value: 'lunch', label: 'Lunch' },
-    { value: 'eveningSnack', 'label': 'Evening Snack' },
+    { value: 'eveningSnack', label: 'Evening Snack' },
     { value: 'dinner', label: 'Dinner' },
   ];
+
+  const activeTabLabel = mealTabs.find(tab => tab.value === activeMealTab)?.label || 'Diary';
 
   if (!currentDate) {
      return (
@@ -130,7 +131,7 @@ export default function DashboardPage() {
   return (
     <AppShell>
       <div className="flex flex-col gap-4">
-        <PageHeader title="Diary" />
+        <PageHeader title={activeTabLabel} />
 
         <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
 
