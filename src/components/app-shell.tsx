@@ -28,29 +28,26 @@ function NavItem({
   href,
   icon: Icon,
   label,
-  isDesktop,
 }: {
   href: string;
   icon: React.ElementType;
   label: string;
-  isDesktop?: boolean;
 }) {
   const pathname = usePathname();
   const isActive = pathname.startsWith(href);
 
   return (
-    <Link href={href} className={cn(!isDesktop && 'flex-1')}>
+    <Link href={href} className="flex-1">
       <div
         className={cn(
           'flex flex-col items-center gap-1 p-2 rounded-lg transition-colors duration-200',
-          isDesktop && 'flex-row gap-2',
           isActive
             ? 'text-primary'
             : 'text-muted-foreground hover:text-primary'
         )}
       >
         <Icon className="h-6 w-6" />
-        <span className={cn('text-xs font-medium', isDesktop && 'text-sm')}>
+        <span className="text-xs font-medium">
           {label}
         </span>
       </div>
@@ -69,33 +66,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      {/* Top Navigation for Desktop */}
-      <header className="sticky top-0 z-10 hidden md:flex items-center justify-between border-b bg-background/95 px-8 py-2 backdrop-blur-sm">
-        <Logo />
-        <nav className="flex items-center gap-4">
-          {navItems.map((item) => (
-            <NavItem
-              key={item.href}
-              href={item.href}
-              icon={item.icon}
-              label={item.label}
-              isDesktop
-            />
-          ))}
-        </nav>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={handleLogout}>
-            <LogOut className="h-6 w-6" />
-          </Button>
-        </div>
-      </header>
-
       <div className="flex flex-1 flex-col">
         <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
 
-        {/* Bottom Navigation for Mobile/Tablet */}
-        <footer className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur-sm md:hidden">
-          <nav className="flex items-center justify-around p-2">
+        <footer className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur-sm">
+          <nav className="flex items-center justify-around p-2 max-w-2xl mx-auto">
             {navItems.map((item) => (
               <NavItem
                 key={item.href}
@@ -104,6 +79,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 label={item.label}
               />
             ))}
+             <Button variant="ghost" size="icon" onClick={handleLogout} className="flex-1 flex flex-col items-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-primary h-auto w-auto">
+                <LogOut className="h-6 w-6" />
+                <span className="text-xs font-medium">Logout</span>
+             </Button>
           </nav>
         </footer>
       </div>
