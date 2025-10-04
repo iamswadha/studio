@@ -185,7 +185,7 @@ export default function FoodMenuPage() {
                 className="w-full"
               >
                 <CarouselContent className="-ml-10">
-                  {foodSuggestions?.suggestions.map((food, index) => (
+                  {foodSuggestions?.data?.suggestions.map((food, index) => (
                     <CarouselItem
                       key={index}
                       className="md:basis-1/2 lg:basis-3/4 pl-10"
