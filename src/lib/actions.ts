@@ -16,6 +16,7 @@ import {
   getIndianFoodSuggestions as getIndianFoodSuggestionsFlow,
   type IndianFoodSuggestionsInput,
   type IndianFoodSuggestionsOutput,
+  type Recipe,
 } from '@/ai/flows/get-indian-food-suggestions';
 import {
   generateMealImage,
@@ -99,7 +100,7 @@ export async function generateMealImageAction(input: GenerateMealImageInput) {
 }
 
 
-export async function planMealForTomorrow(meal: { name: string; imageUrl: string; description: string; }) {
+export async function planMealForTomorrow(meal: Recipe) {
     try {
         const { auth, firestore } = await getFirebase();
         

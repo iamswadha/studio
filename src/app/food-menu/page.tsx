@@ -23,6 +23,8 @@ import { startOfTomorrow, format } from 'date-fns';
 import type { PlannedMeal } from '@/app/log-meal/layout';
 import { useState } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
+import type { Recipe } from '@/ai/flows/get-indian-food-suggestions';
+import { RecipeView } from '@/components/recipe-view';
 
 const mealCategories = [
   { name: 'Sugar-Free' },
@@ -111,7 +113,7 @@ export default function FoodMenuPage() {
     enabled: debouncedSearchQuery.length > 0,
   });
 
-  const handleSaveForTomorrow = async (meal: { name: string; imageUrl: string; description: string }) => {
+  const handleSaveForTomorrow = async (meal: Recipe) => {
     const result = await planMealForTomorrow(meal);
     if (result.success) {
       toast({
@@ -185,7 +187,7 @@ export default function FoodMenuPage() {
             ))}
 
           {foodSuggestions?.data?.suggestions.map((food, index) => (
-            <Card key={index} className="overflow-hidden">
+            <Card key={index} className="overflow-hidden flex flex-col">
               <CardContent className="p-0 relative">
                 <Image
                   src={food.imageUrl}
@@ -195,14 +197,12 @@ export default function FoodMenuPage() {
                   className="w-full h-48 object-cover"
                 />
               </CardContent>
-              <CardHeader>
+              <CardHeader className='flex-grow'>
                 <CardTitle>{food.name}</CardTitle>
                 <CardDescription className="line-clamp-2">{food.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button className="w-full" onClick={() => handleSaveForTomorrow(food)}>
-                  <Plus className="mr-2 h-4 w-4" /> Save for Tomorrow
-                </Button>
+                <RecipeView recipe={food} onPlan={handleSaveForTomorrow} />
               </CardContent>
             </Card>
           ))}

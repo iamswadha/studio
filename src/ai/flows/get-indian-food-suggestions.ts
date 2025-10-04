@@ -21,6 +21,14 @@ const FoodSuggestionSchema = z.object({
   name: z.string().describe('The name of the Indian food item.'),
   imageUrl: z.string().describe('A URL for an image of the food item.'),
   description: z.string().describe('A short, enticing description of the food item.'),
+  ingredients: z.array(z.string()).describe('A list of ingredients for the recipe.'),
+  recipe: z.array(z.string()).describe('The step-by-step cooking instructions.'),
+  nutrition: z.object({
+    calories: z.number().describe('Estimated calories per serving.'),
+    protein: z.number().describe('Estimated protein in grams per serving.'),
+    fat: z.number().describe('Estimated fat in grams per serving.'),
+    carbs: z.number().describe('Estimated carbohydrates in grams per serving.'),
+  }).describe('Nutritional information per serving.'),
 });
 
 const IndianFoodSuggestionsOutputSchema = z.object({
@@ -31,6 +39,7 @@ const IndianFoodSuggestionsOutputSchema = z.object({
 export type IndianFoodSuggestionsOutput = z.infer<
   typeof IndianFoodSuggestionsOutputSchema
 >;
+export type Recipe = z.infer<typeof FoodSuggestionSchema>;
 
 export async function getIndianFoodSuggestions(
   input: IndianFoodSuggestionsInput
@@ -44,7 +53,12 @@ const prompt = ai.definePrompt({
   output: {schema: IndianFoodSuggestionsOutputSchema},
   prompt: `You are an expert on Indian cuisine. The user is searching for Indian food items.
 Based on their query: {{{query}}}, provide a list of 5 relevant Indian food suggestions.
-For each suggestion, provide a realistic and appealing image URL and a short, one-sentence enticing description of the food. You can use Unsplash for images.
+For each suggestion, provide:
+1. A realistic and appealing image URL. You can use Unsplash for images.
+2. A short, one-sentence enticing description of the food.
+3. A list of ingredients.
+4. The step-by-step recipe.
+5. Estimated nutritional information (calories, protein, fat, carbs) for a single serving.
 `,
 });
 
