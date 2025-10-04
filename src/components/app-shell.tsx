@@ -18,7 +18,7 @@ import { Logo } from './logo';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutGrid, label: 'Home' },
-  { href: '/log-meal', icon: BookOpen, label: 'Log Meal' },
+  { href: '/food-menu', icon: BookOpen, label: 'Diary' },
   { href: '/progress', icon: BarChart, label: 'Progress' },
   { href: '/profile', icon: User, label: 'Profile' },
 ];
@@ -65,7 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur-sm">
+       <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur-sm">
         <div className="container mx-auto flex h-14 items-center justify-between">
           <div className="flex items-center gap-2">
             <Logo />
@@ -79,7 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex flex-1 flex-col">
         <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
 
-        <footer className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur-sm md:hidden">
+        <footer className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur-sm">
           <nav className="flex items-center justify-around p-2 max-w-2xl mx-auto">
             {navItems.map((item) => (
               <NavItem
