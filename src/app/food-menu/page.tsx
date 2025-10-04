@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Search, Camera, Plus } from 'lucide-react';
+import { Search, Camera } from 'lucide-react';
 import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { getIndianFoodSuggestions, planMealForTomorrow } from '@/lib/actions';
@@ -25,7 +25,8 @@ import { useState } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
 import type { Recipe } from '@/ai/flows/get-indian-food-suggestions';
 import { RecipeView } from '@/components/recipe-view';
-import Link from 'next/link';
+import { VisualSearchPopup } from '@/components/visual-search-popup';
+
 
 const mealCategories = [
   { name: 'Sugar-Free' },
@@ -130,6 +131,10 @@ export default function FoodMenuPage() {
     }
   };
 
+  const handleVisualSearch = (mealName: string) => {
+    setSearchQuery(mealName);
+  };
+
   return (
     <AppShell>
       <div className="flex flex-col gap-8">
@@ -146,16 +151,15 @@ export default function FoodMenuPage() {
             value={searchQuery === 'healthy' ? '' : searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8"
-            asChild
-          >
-            <Link href="/log-meal/healthify-snap">
+          <VisualSearchPopup onSearch={handleVisualSearch}>
+             <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8"
+              >
               <Camera className="h-5 w-5 text-muted-foreground" />
-            </Link>
-          </Button>
+            </Button>
+          </VisualSearchPopup>
         </div>
 
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
