@@ -1,166 +1,200 @@
-
 'use client';
-import { useState, useEffect } from 'react';
+
 import { AppShell } from '@/components/app-shell';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Search, Grid, Filter } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  useUser,
-  useFirestore,
-  useCollection,
-  useMemoFirebase,
-} from '@/firebase';
-import {
-  collection,
-  query,
-  orderBy,
-  where,
-  Timestamp,
-} from 'firebase/firestore';
-import { format, startOfDay, endOfDay, addDays, subDays, isToday, isYesterday, isTomorrow } from 'date-fns';
-import { MealContent } from '@/components/meal-content';
-import type { LoggedMeal, MealData, MealTime } from '@/app/log-meal/layout';
 import { PageHeader } from '@/components/page-header';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Search, SlidersHorizontal, Plus } from 'lucide-react';
+import Image from 'next/image';
+import { useQuery } from '@tanstack/react-query';
+import { getIndianFoodSuggestions, planMealForTomorrow } from '@/lib/actions';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where, Timestamp } from 'firebase/firestore';
+import { startOfTomorrow, format } from 'date-fns';
+import type { PlannedMeal } from '@/app/log-meal/layout';
 
+const mealCategories = [
+  { name: 'Sugar-Free' },
+  { name: 'Oil-Free' },
+  { name: 'High-Fiber' },
+  { name: 'Vegan' },
+  { name: 'Gluten-Free' },
+];
 
-const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDateChange: (newDate: Date) => void }) => {
-  const previousDate = subDays(currentDate, 1);
-  const nextDate = addDays(currentDate, 1);
-
-  const formatDate = (date: Date): string => {
-    if (isToday(date)) return "Today";
-    if (isYesterday(date)) return "Yesterday";
-    if (isTomorrow(date)) return "Tomorrow";
-    return format(date, 'MMM d');
-  };
-
-  return (
-    <div className="flex items-center justify-between py-4">
-      <Button variant="ghost" className="text-muted-foreground" onClick={() => onDateChange(previousDate)}>
-        {formatDate(previousDate)}
-      </Button>
-      <h2 className="text-2xl font-bold text-center">{formatDate(currentDate)}</h2>
-      <Button variant="ghost" className="text-muted-foreground" onClick={() => onDateChange(nextDate)}>
-        {formatDate(nextDate)}
-      </Button>
-    </div>
-  );
-};
-
-
-export default function FoodMenuPage() {
+function PlannedMeals() {
   const { user } = useUser();
   const firestore = useFirestore();
-  const [currentDate, setCurrentDate] = useState<Date | null>(null);
-  const [activeMealTab, setActiveMealTab] = useState<MealTime>('breakfast');
 
-  useEffect(() => {
-    setCurrentDate(new Date());
-  }, []);
-
-  const mealsQuery = useMemoFirebase(() => {
-    if (!user || !currentDate) return null;
-
-    const start = startOfDay(currentDate);
-    const end = endOfDay(currentDate);
-
+  const plannedMealsQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    const tomorrow = startOfTomorrow();
     return query(
-      collection(firestore, 'users', user.uid, 'meals'),
-      where('timestamp', '>=', Timestamp.fromDate(start)),
-      where('timestamp', '<=', Timestamp.fromDate(end)),
-      orderBy('timestamp', 'desc')
+      collection(firestore, 'users', user.uid, 'plannedMeals'),
+      where('planDate', '==', Timestamp.fromDate(tomorrow))
     );
-  }, [firestore, user, currentDate]);
+  }, [user, firestore]);
 
-  const { data: mealsFromDb } = useCollection<LoggedMeal>(mealsQuery);
+  const { data: plannedMeals, isLoading } = useCollection<PlannedMeal>(plannedMealsQuery);
 
-  const [loggedMeals, setLoggedMeals] = useState<MealData>({
-    breakfast: [],
-    morningSnack: [],
-    lunch: [],
-    eveningSnack: [],
-    dinner: [],
-  });
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-1/2" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <Skeleton className="h-10 w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
 
-  useEffect(() => {
-    const newMealData: MealData = {
-        breakfast: [],
-        morningSnack: [],
-        lunch: [],
-        eveningSnack: [],
-        dinner: [],
-      };
-    if (mealsFromDb) {
-      mealsFromDb.forEach((meal) => {
-        if (newMealData[meal.mealTime]) {
-          newMealData[meal.mealTime].push(meal);
-        }
-      });
-    }
-      setLoggedMeals(newMealData);
-  }, [mealsFromDb]);
-
-  const mealTabs = [
-    { value: 'breakfast', label: 'Breakfast' },
-    { value: 'morningSnack', label: 'Morning Snack' },
-    { value: 'lunch', label: 'Lunch' },
-    { value: 'eveningSnack', 'label': 'Evening Snack' },
-    { value: 'dinner', label: 'Dinner' },
-  ];
-
-  if (!currentDate) {
-     return (
-      <AppShell>
-        <div className="flex flex-col gap-8">
-          <header className="flex justify-between items-center">
-            <h1 className="font-serif text-4xl">
-              Break<span className="font-bold">fast</span>
-            </h1>
-            <div className="flex items-center gap-4">
-              <Search className="h-6 w-6 text-muted-foreground" />
-              <Grid className="h-6 w-6 text-muted-foreground" />
-            </div>
-          </header>
-        </div>
-      </AppShell>
-     )
+  if (!plannedMeals || plannedMeals.length === 0) {
+    return null;
   }
 
   return (
+    <Card className="bg-secondary">
+      <CardHeader>
+        <CardTitle>Planned for Tomorrow</CardTitle>
+        <CardDescription>
+          {format(startOfTomorrow(), 'EEEE, MMMM d')}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ul className="space-y-3">
+          {plannedMeals.map((meal) => (
+            <li
+              key={meal.id}
+              className="flex items-center justify-between bg-background p-3 rounded-lg"
+            >
+              <div className="flex items-center gap-4">
+                <Image
+                  src={meal.imageUrl}
+                  alt={meal.name}
+                  width={40}
+                  height={40}
+                  className="rounded-md object-cover"
+                />
+                <span className="font-medium">{meal.name}</span>
+              </div>
+              <Button variant="ghost" size="sm" disabled>Added</Button>
+            </li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+}
+
+
+export default function FoodMenuPage() {
+  const { toast } = useToast();
+
+  const { data: foodSuggestions, isLoading: isLoadingSuggestions } = useQuery({
+    queryKey: ['food-suggestions-indian'],
+    queryFn: () => getIndianFoodSuggestions({ query: 'healthy' }),
+  });
+
+  const handleSaveForTomorrow = async (meal: { name: string; imageUrl: string; description: string }) => {
+    const result = await planMealForTomorrow(meal);
+    if (result.success) {
+      toast({
+        title: 'Meal Planned!',
+        description: `${meal.name} has been added to your plan for tomorrow.`,
+      });
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: result.error,
+      });
+    }
+  };
+
+  return (
     <AppShell>
-      <div className="flex flex-col gap-4">
-        <PageHeader title="Diary" />
+      <div className="flex flex-col gap-8">
+        <PageHeader
+          title="Discover Recipes"
+          description="Find inspiration for your next healthy meal."
+        />
 
-        <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
-
-        <div className="flex justify-center my-4">
-          <div className="flex items-center gap-2 rounded-full bg-card p-1">
-            {mealTabs.map((filter) => (
-              <Button
-                key={filter.value}
-                variant={activeMealTab === filter.value ? 'secondary' : 'ghost'}
-                size="sm"
-                className="rounded-full"
-                onClick={() => setActiveMealTab(filter.value as MealTime)}
-              >
-                {filter.label}
-              </Button>
-            ))}
-          </div>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input placeholder="Search for recipes..." className="pl-10 !h-12" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8"
+          >
+            <SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
+          </Button>
         </div>
 
-        <div className="w-full">
-            {mealTabs.map((meal) => (
-                <div key={meal.value} className={cn(activeMealTab === meal.value ? 'block' : 'hidden' )}>
-                    <MealContent
-                    mealTime={meal.value as MealTime}
-                    loggedMeals={loggedMeals[meal.value as MealTime] || []}
-                    currentDate={currentDate}
-                    />
-                </div>
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
+          {mealCategories.map((cat) => (
+            <Button
+              key={cat.name}
+              variant="secondary"
+              className="rounded-full shrink-0"
+            >
+              {cat.name}
+            </Button>
+          ))}
+        </div>
+        
+        <PlannedMeals />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {isLoadingSuggestions &&
+            Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-0">
+                  <Skeleton className="h-48 w-full" />
+                </CardContent>
+                <CardHeader>
+                  <Skeleton className="h-6 w-3/4 mb-2" />
+                  <Skeleton className="h-4 w-full" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
             ))}
+
+          {foodSuggestions?.data?.suggestions.map((food, index) => (
+            <Card key={index} className="overflow-hidden">
+              <CardContent className="p-0 relative">
+                <Image
+                  src={food.imageUrl}
+                  alt={food.name}
+                  width={600}
+                  height={400}
+                  className="w-full h-48 object-cover"
+                />
+              </CardContent>
+              <CardHeader>
+                <CardTitle>{food.name}</CardTitle>
+                <CardDescription className="line-clamp-2">{food.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" onClick={() => handleSaveForTomorrow(food)}>
+                  <Plus className="mr-2 h-4 w-4" /> Save for Tomorrow
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     </AppShell>
