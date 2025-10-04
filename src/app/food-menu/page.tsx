@@ -29,7 +29,7 @@ import {
   where,
   Timestamp,
 } from 'firebase/firestore';
-import { format, startOfDay, endOfDay, addDays, isToday, isYesterday } from 'date-fns';
+import { format, startOfDay, endOfDay, addDays, subDays, isToday, isYesterday, isTomorrow } from 'date-fns';
 import { MealContent } from '@/components/meal-content';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { PageHeader } from '@/components/page-header';
@@ -38,6 +38,30 @@ import type { LoggedMeal, MealData, MealTime } from '@/app/log-meal/layout';
 
 const categories = ['Bread', 'Noodles', 'Seafood', 'Pizza', 'Pasta'];
 const filters = ['Beer', 'Foods', 'Wine'];
+
+const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDateChange: (newDate: Date) => void }) => {
+  const previousDate = subDays(currentDate, 1);
+  const nextDate = addDays(currentDate, 1);
+
+  const formatDate = (date: Date): string => {
+    if (isToday(date)) return "Today";
+    if (isYesterday(date)) return "Yesterday";
+    if (isTomorrow(date)) return "Tomorrow";
+    return format(date, 'MMM d');
+  };
+
+  return (
+    <div className="flex items-center justify-between py-4">
+      <Button variant="ghost" className="text-muted-foreground" onClick={() => onDateChange(previousDate)}>
+        {formatDate(previousDate)}
+      </Button>
+      <h2 className="text-2xl font-bold text-center">{formatDate(currentDate)}</h2>
+      <Button variant="ghost" className="text-muted-foreground" onClick={() => onDateChange(nextDate)}>
+        {formatDate(nextDate)}
+      </Button>
+    </div>
+  );
+};
 
 export default function FoodMenuPage() {
   const { data: foodSuggestions, isLoading } = useQuery({
@@ -106,14 +130,6 @@ export default function FoodMenuPage() {
       });
     }
   }, [mealsFromDb]);
-
-  const getPageTitle = () => {
-    if(!currentDate) return "Loading...";
-    if(isToday(currentDate)) return "Today's Insights";
-    if(isYesterday(currentDate)) return "Yesterday's Insights";
-    if(currentDate > new Date() && !isToday(currentDate)) return `Plans for ${format(currentDate, 'MMMM d')}`;
-    return format(currentDate, 'MMMM d, yyyy');
-  }
 
   const mealTabs = [
     { value: 'breakfast', label: 'Breakfast' },
@@ -225,19 +241,7 @@ export default function FoodMenuPage() {
         </div>
 
         <div id="diary" className="pt-8">
-           <PageHeader
-            title={getPageTitle()}
-            description="Log your meals to get AI-powered insights and recommendations."
-          >
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={() => setCurrentDate(addDays(currentDate, -1))}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="icon" onClick={() => setCurrentDate(addDays(currentDate, 1))}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </PageHeader>
+          <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
         
           <Tabs defaultValue="breakfast" className="w-full mt-4">
             <div className="flex justify-between items-center mb-4 gap-4">
