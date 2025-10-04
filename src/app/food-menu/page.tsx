@@ -3,8 +3,8 @@ import { useState, useEffect } from 'react';
 import { AppShell } from '@/components/app-shell';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Search, Grid } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Search, Grid, Filter } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   useUser,
   useFirestore,
@@ -21,7 +21,6 @@ import {
 import { format, startOfDay, endOfDay, addDays, subDays, isToday, isYesterday, isTomorrow } from 'date-fns';
 import { MealContent } from '@/components/meal-content';
 import type { LoggedMeal, MealData, MealTime } from '@/app/log-meal/layout';
-
 
 const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDateChange: (newDate: Date) => void }) => {
   const previousDate = subDays(currentDate, 1);
@@ -138,34 +137,38 @@ export default function FoodMenuPage() {
                 </div>
             </header>
 
+            <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon">
+                    <Filter className="h-4 w-4" />
+                </Button>
+                <div className="overflow-x-auto w-full">
+                    <div className="flex gap-2">
+                    {mealTabs.map((filter) => (
+                        <Button
+                        key={filter.value}
+                        variant={activeMealTab === filter.value ? 'default' : 'outline'}
+                        className="rounded-full"
+                        onClick={() => setActiveMealTab(filter.value as MealTime)}
+                        >
+                        {filter.label}
+                        </Button>
+                    ))}
+                    </div>
+                </div>
+            </div>
+
             <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
 
-            <Tabs defaultValue="breakfast" orientation="vertical" className="flex flex-col md:flex-row gap-8" value={activeMealTab} onValueChange={(value) => setActiveMealTab(value as MealTime)}>
-                <TabsList className="flex md:flex-col justify-start md:h-auto bg-transparent p-0 w-full md:w-48 overflow-x-auto md:overflow-visible">
-                    {mealTabs.map((meal) => (
-                    <TabsTrigger 
-                        key={meal.value} 
-                        value={meal.value}
-                        className={cn(
-                            "w-full justify-start text-base data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:font-bold rounded-lg px-4 py-3"
-                        )}
-                    >
-                        {meal.label}
-                    </TabsTrigger>
-                    ))}
-                </TabsList>
-
-                <div className="flex-1 w-full">
-                    {mealTabs.map((meal) => (
-                        <TabsContent key={meal.value} value={meal.value} className="mt-0">
-                            <MealContent
-                            mealTime={meal.value as MealTime}
-                            loggedMeals={loggedMeals[meal.value as MealTime] || []}
-                            currentDate={currentDate}
-                            />
-                        </TabsContent>
-                    ))}
-                </div>
+            <Tabs defaultValue="breakfast" className="w-full" value={activeMealTab} onValueChange={(value) => setActiveMealTab(value as MealTime)}>
+                {mealTabs.map((meal) => (
+                    <TabsContent key={meal.value} value={meal.value} className="mt-0">
+                        <MealContent
+                        mealTime={meal.value as MealTime}
+                        loggedMeals={loggedMeals[meal.value as MealTime] || []}
+                        currentDate={currentDate}
+                        />
+                    </TabsContent>
+                ))}
             </Tabs>
         </div>
     </AppShell>
