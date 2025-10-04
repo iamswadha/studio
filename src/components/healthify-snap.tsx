@@ -326,7 +326,7 @@ export function HealthifySnap({
             {foodItems.map((item) => (
               <li
                 key={item.id}
-                className="flex items-center justify-between text-sm"
+                className="flex items-center justify-between text-sm p-2 rounded-md hover:bg-muted/50"
               >
                 {isEditing === item.id ? (
                   <div className="w-full">
@@ -364,7 +364,7 @@ export function HealthifySnap({
               </li>
             ))}
             {isAdding && (
-              <li className="flex gap-2">
+              <li className="flex gap-2 p-2">
                 <div className="w-full">
                   <FoodSearchCombobox
                     onSelect={(value) => {

@@ -110,7 +110,7 @@ export default function ActivityPage() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-4">
-              <li className="flex items-center justify-between">
+              <li className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
                 <div className="font-medium">High-Intensity Interval Training</div>
                 <div className="text-right text-sm">
                   <p>30 min</p>
@@ -118,7 +118,7 @@ export default function ActivityPage() {
                 </div>
               </li>
               <Separator />
-              <li className="flex items-center justify-between">
+              <li className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
                 <div className="font-medium">Outdoor Walk</div>
                 <div className="text-right text-sm">
                   <p>45 min</p>
@@ -126,7 +126,7 @@ export default function ActivityPage() {
                 </div>
               </li>
               <Separator />
-              <li className="flex items-center justify-between">
+              <li className="flex items-center justify-between p-2 rounded-md hover:bg-muted/50">
                 <div className="font-medium">Strength Training</div>
                 <div className="text-right text-sm">
                   <p>60 min</p>

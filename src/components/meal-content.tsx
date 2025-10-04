@@ -168,7 +168,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
                       </div>
                     )}
                     <div className='w-full space-y-3'>
-                      <div className="grid grid-cols-[1fr_auto] items-center gap-2">
+                      <div className="grid grid-cols-[1fr_auto] items-center gap-2 p-2 rounded-md">
                         <div>
                             <p className="font-bold">Total Nutrition</p>
                             <p className="text-sm text-muted-foreground">
@@ -182,7 +182,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
                       <Separator />
                       <div className="space-y-2">
                         {meal.items.map(item => (
-                           <div key={item.id} className="flex items-center justify-between text-sm">
+                           <div key={item.id} className="flex items-center justify-between text-sm p-2 rounded-md hover:bg-muted/50">
                               <span>{item.name}</span>
                               <span className="text-xs text-muted-foreground">{Math.round(item.calories)} kcal</span>
                            </div>
