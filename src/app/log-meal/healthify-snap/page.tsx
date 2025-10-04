@@ -24,8 +24,6 @@ export default function HealthifySnapPage() {
     const handleLogMeal = async (meal: {
         mealTime: MealTime;
         items: FoodItem[];
-        totalNutrition: any;
-        imageUrl?: string;
     }) => {
         if (!user || !meal.mealTime) return;
 
@@ -36,7 +34,6 @@ export default function HealthifySnapPage() {
             mealTime: meal.mealTime,
             date: selectedDate.toISOString(),
             items: meal.items,
-            imageUrl: meal.imageUrl,
         });
 
         router.push(`/dashboard`);

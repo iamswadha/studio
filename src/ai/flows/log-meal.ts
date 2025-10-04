@@ -12,6 +12,7 @@ import {
   addDoc,
 } from 'firebase/firestore';
 import { z } from 'zod';
+import { generateMealImage } from './generate-meal-image';
 
 const FoodItemSchema = z.object({
   id: z.number(),
@@ -30,7 +31,6 @@ const LogMealInputSchema = z.object({
     .describe('The time of day for the meal.'),
   date: z.string().describe('The ISO date string for the meal log.'),
   items: z.array(FoodItemSchema).describe('The food items in the meal.'),
-  imageUrl: z.string().optional().describe('An optional image URL for the meal.'),
 });
 
 export type LogMealInput = z.infer<typeof LogMealInputSchema>;
@@ -43,13 +43,15 @@ export const logMealFlow = ai.defineFlow(
   },
   async (input) => {
     const { firestore } = await getFirebase();
-    const { userId, mealTime, date, items, imageUrl } = input;
+    const { userId, mealTime, date, items } = input;
 
     const mealDate = new Date(date);
     const mealsCol = collection(firestore, 'users', userId, 'meals');
 
-    // Always create a new meal document for each log action.
-    // This simplifies the logic and avoids complex, error-prone updates.
+    // Generate a new image for the meal
+    const foodItemNames = items.map(item => item.name);
+    const imageResult = await generateMealImage({ foodItems: foodItemNames });
+    
     const totalNutrition = items.reduce(
       (acc, item) => ({
         calories: acc.calories + (item.calories || 0),
@@ -66,8 +68,7 @@ export const logMealFlow = ai.defineFlow(
       timestamp: Timestamp.fromDate(mealDate),
       items,
       totalNutrition,
-      // Use the overall meal image, fallback to the first item's image, or empty string.
-      imageUrl: imageUrl || items[0]?.imageUrl || '',
+      imageUrl: imageResult.imageUrl,
     };
     
     const docRef = await addDoc(mealsCol, newMeal);

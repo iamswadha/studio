@@ -40,7 +40,6 @@ import {
 } from '@/components/ui/select';
 import { PageHeader } from './page-header';
 import Link from 'next/link';
-import { logMeal } from '@/lib/actions';
 
 type FoodItem = {
   id: number;
@@ -66,8 +65,6 @@ export function HealthifySnap({
   onLogMeal: (meal: {
     mealTime: MealTime;
     items: FoodItem[];
-    totalNutrition: any;
-    imageUrl?: string;
   }) => Promise<void>;
 }) {
   const [preview, setPreview] = useState<string | null>(null);
@@ -85,9 +82,9 @@ export function HealthifySnap({
     return foodItems.reduce(
       (acc, item) => ({
         calories: acc.calories + item.calories,
-        protein: acc.protein + item.protein,
-        carbohydrates: acc.carbohydrates + item.carbohydrates,
-        fat: acc.fat + item.fat,
+        protein: acc.calories + item.protein,
+        carbohydrates: acc.calories + item.carbohydrates,
+        fat: acc.calories + item.fat,
       }),
       { calories: 0, protein: 0, carbohydrates: 0, fat: 0 }
     );
@@ -186,8 +183,6 @@ export function HealthifySnap({
         await onLogMeal({
           mealTime,
           items: foodItems,
-          totalNutrition,
-          imageUrl: preview || undefined,
         });
 
         toast({
