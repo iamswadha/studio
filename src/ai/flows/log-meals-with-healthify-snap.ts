@@ -35,6 +35,7 @@ const LogMealsWithHealthifySnapOutputSchema = z.object({
     })
     .describe('The estimated total macronutrient breakdown of the meal.'),
   foodItems: z.array(z.string()).describe('A list of the most likely food items identified in the photo.'),
+  foodItemsWithSuggestions: z.array(FoodItemSchema).describe('A list of identified food items, each with a primary name and a list of alternative suggestions.'),
 });
 export type LogMealsWithHealthifySnapOutput = z.infer<typeof LogMealsWithHealthifySnapOutputSchema>;
 
@@ -56,7 +57,7 @@ const prompt = ai.definePrompt({
 
   Photo: {{media url=photoDataUri}}
 
-  Respond with the estimated total calories, total macronutrient breakdown, and a list of the most likely names for the identified food items.
+  Respond with the estimated total calories, total macronutrient breakdown, and a list of the most likely names for the identified food items, along with their suggestions.
   Make your best estimates. Be as accurate as possible. Do not ask follow up questions, simply provide the data requested in the output schema.
   `,
 });
@@ -72,5 +73,3 @@ const logMealsWithHealthifySnapFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    

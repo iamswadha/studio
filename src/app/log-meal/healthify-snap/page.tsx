@@ -4,7 +4,6 @@ import { useFirestore, useUser, addDocumentNonBlocking } from "@/firebase";
 import { useRouter, useSearchParams } from "next/navigation";
 import { collection, Timestamp } from "firebase/firestore";
 import type { MealTime } from "../layout";
-import { startOfDay } from "date-fns";
 import { generateMealImageAction } from "@/lib/actions";
 
 type FoodItem = {
@@ -32,7 +31,6 @@ export default function HealthifySnapPage() {
         if (!user || !meal.mealTime) return;
 
         const selectedDate = dateParam ? new Date(dateParam) : new Date();
-        const mealTimestamp = startOfDay(selectedDate);
         
         let generatedImageUrl: string | undefined = undefined;
         try {
@@ -48,14 +46,14 @@ export default function HealthifySnapPage() {
         const mealToLog = {
             ...meal,
             userId: user.uid,
-            timestamp: Timestamp.fromDate(mealTimestamp),
+            timestamp: Timestamp.fromDate(selectedDate),
             imageUrl: generatedImageUrl,
         };
 
         const mealsCol = collection(firestore, 'users', user.uid, 'meals');
         addDocumentNonBlocking(mealsCol, mealToLog);
 
-        router.push(`/log-meal`);
+        router.push(`/dashboard`);
     };
 
     return <HealthifySnap onLogMeal={handleLogMeal} />
