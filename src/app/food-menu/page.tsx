@@ -45,7 +45,8 @@ function PlannedMeals() {
     const tomorrow = startOfTomorrow();
     return query(
       collection(firestore, 'users', user.uid, 'plannedMeals'),
-      where('planDate', '==', Timestamp.fromDate(tomorrow))
+      where('planDate', '>=', Timestamp.fromDate(tomorrow)),
+      where('planDate', '<', Timestamp.fromDate(new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)))
     );
   }, [user, firestore]);
 

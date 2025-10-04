@@ -21,7 +21,7 @@ import { format, startOfDay, endOfDay, addDays, subDays, isToday, isYesterday, i
 import { MealContent } from '@/components/meal-content';
 import type { LoggedMeal, MealData, MealTime } from '@/app/log-meal/layout';
 import { PageHeader } from '@/components/page-header';
-
+import { PlannedMealContent } from '@/components/planned-meal-content';
 
 const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDateChange: (newDate: Date) => void }) => {
   const previousDate = subDays(currentDate, 1);
@@ -37,11 +37,11 @@ const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDat
   return (
     <div className="flex items-center justify-between py-4">
       <Button variant="ghost" className="text-muted-foreground" onClick={() => onDateChange(previousDate)}>
-        {formatDate(previousDate)}
+        &lt; {format(previousDate, 'MMM d')}
       </Button>
       <h2 className="text-2xl font-bold text-center">{formatDate(currentDate)}</h2>
       <Button variant="ghost" className="text-muted-foreground" onClick={() => onDateChange(nextDate)}>
-        {formatDate(nextDate)}
+        {format(nextDate, 'MMM d')} &gt;
       </Button>
     </div>
   );
@@ -52,6 +52,7 @@ export default function DashboardPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
+  const [activeTab, setActiveTab] = useState<'today' | 'tomorrow'>('today');
   const [activeMealTab, setActiveMealTab] = useState<MealTime>('breakfast');
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function DashboardPage() {
   }, []);
 
   const mealsQuery = useMemoFirebase(() => {
-    if (!user || !currentDate) return null;
+    if (!user || !currentDate || activeTab !== 'today') return null;
 
     const start = startOfDay(currentDate);
     const end = endOfDay(currentDate);
@@ -70,7 +71,7 @@ export default function DashboardPage() {
       where('timestamp', '<=', Timestamp.fromDate(end)),
       orderBy('timestamp', 'desc')
     );
-  }, [firestore, user, currentDate]);
+  }, [firestore, user, currentDate, activeTab]);
 
   const { data: mealsFromDb } = useCollection<LoggedMeal>(mealsQuery);
 
@@ -108,7 +109,9 @@ export default function DashboardPage() {
     { value: 'dinner', label: 'Dinner' },
   ];
 
-  const activeTabLabel = mealTabs.find(tab => tab.value === activeMealTab)?.label || 'Diary';
+  const activeTabLabel = activeTab === 'today' 
+    ? mealTabs.find(tab => tab.value === activeMealTab)?.label || 'Diary' 
+    : 'Tomorrow';
 
   if (!currentDate) {
      return (
@@ -133,35 +136,64 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-4">
         <PageHeader title={activeTabLabel} />
 
-        <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
-
         <div className="flex justify-center my-4">
           <div className="flex items-center gap-2 rounded-full bg-card p-1">
-            {mealTabs.map((filter) => (
-              <Button
-                key={filter.value}
-                variant={activeMealTab === filter.value ? 'secondary' : 'ghost'}
-                size="sm"
-                className="rounded-full"
-                onClick={() => setActiveMealTab(filter.value as MealTime)}
-              >
-                {filter.label}
-              </Button>
-            ))}
+            <Button
+              variant={activeTab === 'today' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="rounded-full"
+              onClick={() => setActiveTab('today')}
+            >
+              Today
+            </Button>
+            <Button
+              variant={activeTab === 'tomorrow' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="rounded-full"
+              onClick={() => setActiveTab('tomorrow')}
+            >
+              Tomorrow
+            </Button>
           </div>
         </div>
 
-        <div className="w-full">
-            {mealTabs.map((meal) => (
-                <div key={meal.value} className={cn(activeMealTab === meal.value ? 'block' : 'hidden' )}>
-                    <MealContent
-                    mealTime={meal.value as MealTime}
-                    loggedMeals={loggedMeals[meal.value as MealTime] || []}
-                    currentDate={currentDate}
-                    />
-                </div>
-            ))}
-        </div>
+        {activeTab === 'today' && (
+          <>
+            <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
+
+            <div className="flex justify-center my-4">
+              <div className="flex items-center gap-2 rounded-full bg-card p-1">
+                {mealTabs.map((filter) => (
+                  <Button
+                    key={filter.value}
+                    variant={activeMealTab === filter.value ? 'secondary' : 'ghost'}
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => setActiveMealTab(filter.value as MealTime)}
+                  >
+                    {filter.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            <div className="w-full">
+                {mealTabs.map((meal) => (
+                    <div key={meal.value} className={cn(activeMealTab === meal.value ? 'block' : 'hidden' )}>
+                        <MealContent
+                        mealTime={meal.value as MealTime}
+                        loggedMeals={loggedMeals[meal.value as MealTime] || []}
+                        currentDate={currentDate}
+                        />
+                    </div>
+                ))}
+            </div>
+          </>
+        )}
+
+        {activeTab === 'tomorrow' && (
+          <PlannedMealContent />
+        )}
       </div>
     </AppShell>
   );
