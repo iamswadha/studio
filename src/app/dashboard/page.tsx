@@ -1,89 +1,165 @@
+'use client';
+import { useState, useEffect } from 'react';
 import { AppShell } from '@/components/app-shell';
-import { PageHeader } from '@/components/page-header';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+import { Search, Grid, Filter } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Flame, Droplets, HeartPulse } from 'lucide-react';
-import Link from 'next/link';
+  useUser,
+  useFirestore,
+  useCollection,
+  useMemoFirebase,
+} from '@/firebase';
+import {
+  collection,
+  query,
+  orderBy,
+  where,
+  Timestamp,
+} from 'firebase/firestore';
+import { format, startOfDay, endOfDay, addDays, subDays, isToday, isYesterday, isTomorrow } from 'date-fns';
+import { MealContent } from '@/components/meal-content';
+import type { LoggedMeal, MealData, MealTime } from '@/app/log-meal/layout';
+import { PageHeader } from '@/components/page-header';
+
+
+const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDateChange: (newDate: Date) => void }) => {
+  const previousDate = subDays(currentDate, 1);
+  const nextDate = addDays(currentDate, 1);
+
+  const formatDate = (date: Date): string => {
+    if (isToday(date)) return "Today";
+    if (isYesterday(date)) return "Yesterday";
+    if (isTomorrow(date)) return "Tomorrow";
+    return format(date, 'MMM d');
+  };
+
+  return (
+    <div className="flex items-center justify-between py-4">
+      <Button variant="ghost" className="text-muted-foreground" onClick={() => onDateChange(previousDate)}>
+        {formatDate(previousDate)}
+      </Button>
+      <h2 className="text-2xl font-bold text-center">{formatDate(currentDate)}</h2>
+      <Button variant="ghost" className="text-muted-foreground" onClick={() => onDateChange(nextDate)}>
+        {formatDate(nextDate)}
+      </Button>
+    </div>
+  );
+};
+
 
 export default function DashboardPage() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
+  const [activeMealTab, setActiveMealTab] = useState<MealTime>('breakfast');
+
+  useEffect(() => {
+    setCurrentDate(new Date());
+  }, []);
+
+  const mealsQuery = useMemoFirebase(() => {
+    if (!user || !currentDate) return null;
+
+    const start = startOfDay(currentDate);
+    const end = endOfDay(currentDate);
+
+    return query(
+      collection(firestore, 'users', user.uid, 'meals'),
+      where('timestamp', '>=', Timestamp.fromDate(start)),
+      where('timestamp', '<=', Timestamp.fromDate(end)),
+      orderBy('timestamp', 'desc')
+    );
+  }, [firestore, user, currentDate]);
+
+  const { data: mealsFromDb } = useCollection<LoggedMeal>(mealsQuery);
+
+  const [loggedMeals, setLoggedMeals] = useState<MealData>({
+    breakfast: [],
+    morningSnack: [],
+    lunch: [],
+    eveningSnack: [],
+    dinner: [],
+  });
+
+  useEffect(() => {
+    const newMealData: MealData = {
+        breakfast: [],
+        morningSnack: [],
+        lunch: [],
+        eveningSnack: [],
+        dinner: [],
+      };
+    if (mealsFromDb) {
+      mealsFromDb.forEach((meal) => {
+        if (newMealData[meal.mealTime]) {
+          newMealData[meal.mealTime].push(meal);
+        }
+      });
+    }
+      setLoggedMeals(newMealData);
+  }, [mealsFromDb]);
+
+  const mealTabs = [
+    { value: 'breakfast', label: 'Breakfast' },
+    { value: 'morningSnack', label: 'Morning Snack' },
+    { value: 'lunch', label: 'Lunch' },
+    { value: 'eveningSnack', 'label': 'Evening Snack' },
+    { value: 'dinner', label: 'Dinner' },
+  ];
+
+  if (!currentDate) {
+     return (
+      <AppShell>
+        <div className="flex flex-col gap-8">
+          <header className="flex justify-between items-center">
+            <h1 className="font-serif text-4xl">
+              Break<span className="font-bold">fast</span>
+            </h1>
+            <div className="flex items-center gap-4">
+              <Search className="h-6 w-6 text-muted-foreground" />
+              <Grid className="h-6 w-6 text-muted-foreground" />
+            </div>
+          </header>
+        </div>
+      </AppShell>
+     )
+  }
+
   return (
     <AppShell>
-      <div className="flex flex-col gap-8">
-        <PageHeader
-          title="Welcome Back!"
-          description="Here's a snapshot of your health and fitness journey today."
-        />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Calories Consumed
-              </CardTitle>
-              <Flame className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1,450 / 2,200 kcal</div>
-              <p className="text-xs text-muted-foreground">
-                +200 from yesterday
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Link
-                href="/log-meal"
-                className="text-sm font-medium text-primary hover:underline"
+      <div className="flex flex-col gap-4">
+        <PageHeader title="Diary" />
+
+        <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
+
+        <div className="flex justify-center my-4">
+          <div className="flex items-center gap-2 rounded-full bg-card p-1">
+            {mealTabs.map((filter) => (
+              <Button
+                key={filter.value}
+                variant={activeMealTab === filter.value ? 'secondary' : 'ghost'}
+                size="sm"
+                className="rounded-full"
+                onClick={() => setActiveMealTab(filter.value as MealTime)}
               >
-                Log another meal
-              </Link>
-            </CardFooter>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Water Intake</CardTitle>
-              <Droplets className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">6 / 8 glasses</div>
-              <p className="text-xs text-muted-foreground">
-                You're almost there!
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Link
-                href="#"
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                Log water
-              </Link>
-            </CardFooter>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Active Energy
-              </CardTitle>
-              <HeartPulse className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">340 kcal</div>
-              <p className="text-xs text-muted-foreground">
-                from your 30-min HIIT workout
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Link
-                href="/activity"
-                className="text-sm font-medium text-primary hover:underline"
-              >
-                View activity
-              </Link>
-            </CardFooter>
-          </Card>
+                {filter.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="w-full">
+            {mealTabs.map((meal) => (
+                <div key={meal.value} className={cn(activeMealTab === meal.value ? 'block' : 'hidden' )}>
+                    <MealContent
+                    mealTime={meal.value as MealTime}
+                    loggedMeals={loggedMeals[meal.value as MealTime] || []}
+                    currentDate={currentDate}
+                    />
+                </div>
+            ))}
         </div>
       </div>
     </AppShell>

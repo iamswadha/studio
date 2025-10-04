@@ -67,12 +67,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-dvh flex-col bg-background">
        <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur-sm">
         <div className="container mx-auto flex h-14 items-center justify-between">
-          <div className="flex items-center gap-2">
+          <Link href="/dashboard">
             <Logo />
-          </div>
+          </Link>
           <Button variant="ghost" size="sm" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
             Logout
+            <LogOut className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </header>

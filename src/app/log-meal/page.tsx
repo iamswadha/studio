@@ -135,18 +135,20 @@ export default function LogMealPage() {
         <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
 
         <div className="flex justify-center my-4">
-          <div className="flex items-center gap-2 rounded-full bg-card p-1">
-            {mealTabs.map((filter) => (
-              <Button
-                key={filter.value}
-                variant={activeMealTab === filter.value ? 'secondary' : 'ghost'}
-                size="sm"
-                className="rounded-full"
-                onClick={() => setActiveMealTab(filter.value as MealTime)}
-              >
-                {filter.label}
-              </Button>
-            ))}
+          <div className="flex items-center justify-center">
+            <div className="flex items-center gap-2 rounded-full bg-card p-1">
+              {mealTabs.map((filter) => (
+                <Button
+                  key={filter.value}
+                  variant={activeMealTab === filter.value ? 'secondary' : 'ghost'}
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => setActiveMealTab(filter.value as MealTime)}
+                >
+                  {filter.label}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
 
