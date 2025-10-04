@@ -9,7 +9,7 @@ import {
   type FoodItemNutritionInput,
 } from '@/ai/flows/get-food-item-nutrition';
 import {
-  getFoodSuggestions,
+  getFoodSuggestions as getFoodSuggestionsFlow,
   type FoodSuggestionsInput,
 } from '@/ai/flows/get-food-suggestions';
 import {
@@ -17,8 +17,8 @@ import {
   type IndianFoodSuggestionsInput,
 } from '@/ai/flows/get-indian-food-suggestions';
 import {
-    generateMealImage,
-    type GenerateMealImageInput,
+  generateMealImage,
+  type GenerateMealImageInput,
 } from '@/ai/flows/generate-meal-image';
 
 export async function getMealAnalysis(input: LogMealsWithHealthifySnapInput) {
@@ -51,7 +51,7 @@ export async function getSingleItemNutrition(input: FoodItemNutritionInput) {
 
 export async function getFoodSuggestions(input: FoodSuggestionsInput) {
   try {
-    const result = await getFoodSuggestions(input);
+    const result = await getFoodSuggestionsFlow(input);
     return { success: true, data: result };
   } catch (error) {
     console.error('Error in getFoodSuggestions:', error);
@@ -79,14 +79,14 @@ export async function getIndianFoodSuggestions(
 }
 
 export async function generateMealImageAction(input: GenerateMealImageInput) {
-    try {
-        const result = await generateMealImage(input);
-        return { success: true, data: result };
-    } catch (error) {
-        console.error('Error in generateMealImageAction:', error);
-        return {
-        success: false,
-        error: 'Failed to generate meal image. Please try again later.',
-        };
-    }
+  try {
+    const result = await generateMealImage(input);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Error in generateMealImageAction:', error);
+    return {
+      success: false,
+      error: 'Failed to generate meal image. Please try again later.',
+    };
+  }
 }
