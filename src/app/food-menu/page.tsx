@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Search, SlidersHorizontal, Plus } from 'lucide-react';
+import { Search, Camera, Plus } from 'lucide-react';
 import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { getIndianFoodSuggestions, planMealForTomorrow } from '@/lib/actions';
@@ -25,6 +25,7 @@ import { useState } from 'react';
 import { useDebounce } from '@/hooks/use-debounce';
 import type { Recipe } from '@/ai/flows/get-indian-food-suggestions';
 import { RecipeView } from '@/components/recipe-view';
+import Link from 'next/link';
 
 const mealCategories = [
   { name: 'Sugar-Free' },
@@ -149,8 +150,11 @@ export default function FoodMenuPage() {
             variant="ghost"
             size="icon"
             className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8"
+            asChild
           >
-            <SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
+            <Link href="/log-meal/healthify-snap">
+              <Camera className="h-5 w-5 text-muted-foreground" />
+            </Link>
           </Button>
         </div>
 
