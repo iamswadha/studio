@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutGrid,
-  ShoppingBasket,
-  Bookmark,
+  BookOpen,
+  BarChart,
   User,
   LogOut,
 } from 'lucide-react';
@@ -18,8 +18,8 @@ import { Logo } from './logo';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutGrid, label: 'Home' },
-  { href: '/shop', icon: ShoppingBasket, label: 'Shop' },
-  { href: '/saved', icon: Bookmark, label: 'Saved' },
+  { href: '/log-meal', icon: BookOpen, label: 'Log Meal' },
+  { href: '/progress', icon: BarChart, label: 'Progress' },
   { href: '/profile', icon: User, label: 'Profile' },
 ];
 
@@ -65,9 +65,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-       <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur-sm">
         <div className="container mx-auto flex h-14 items-center justify-between">
-           <Logo />
+          <div className="flex items-center gap-2">
+            <Logo />
+          </div>
           <Button variant="ghost" size="sm" onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" />
             Logout
@@ -77,7 +79,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex flex-1 flex-col">
         <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
 
-        <footer className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur-sm">
+        <footer className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur-sm md:hidden">
           <nav className="flex items-center justify-around p-2 max-w-2xl mx-auto">
             {navItems.map((item) => (
               <NavItem
