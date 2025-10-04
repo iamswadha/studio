@@ -34,7 +34,7 @@ export type FoodSuggestionsOutput = z.infer<
 export async function getFoodSuggestions(
   input: FoodSuggestionsInput
 ): Promise<FoodSuggestionsOutput> {
-  return foodSuggestionsFlow(input);
+  return getFoodSuggestionsFlow(input);
 }
 
 const prompt = ai.definePrompt({
@@ -44,13 +44,13 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert on food and nutrition. The user is searching for food items.
 Based on their query: {{{query}}}, provide a list of 5 relevant food suggestions.
 This can include fruits, vegetables, cooked meals, etc.
-For each suggestion, provide a realistic and appealing image URL from Unsplash.
+For each suggestion, provide a realistic and appealing image URL for a top-down photo of the food on a plate. You can use Unsplash for images.
 `,
 });
 
-const foodSuggestionsFlow = ai.defineFlow(
+const getFoodSuggestionsFlow = ai.defineFlow(
   {
-    name: 'foodSuggestionsFlow',
+    name: 'getFoodSuggestionsFlow',
     inputSchema: FoodSuggestionsInputSchema,
     outputSchema: FoodSuggestionsOutputSchema,
   },

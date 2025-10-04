@@ -18,30 +18,30 @@ export function FoodCard({
 }: FoodCardProps) {
   return (
     <div className="relative aspect-[3/4] w-full max-w-sm mx-auto pt-12">
-      {/* Background Card */}
-      <div className="relative h-full w-full rounded-[40px] bg-card shadow-2xl p-6 flex flex-col justify-end items-center text-center" style={{backgroundColor: '#e6f0ff'}}>
-        
-        <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 w-48 h-48">
+      <Button
+        size="icon"
+        className="absolute top-0 left-8 z-20 rounded-full h-12 w-12 bg-primary shadow-lg"
+      >
+        <Heart className="w-6 h-6 text-primary-foreground" />
+      </Button>
+
+      <div className="relative h-full w-full rounded-[40px] bg-card p-6 flex flex-col justify-end items-start text-left">
+        <div className="absolute -top-4 right-0 w-48 h-48 drop-shadow-2xl">
           <Image
             src={image}
             alt={name}
-            fill
-            className="object-contain drop-shadow-2xl"
+            width={200}
+            height={200}
+            className="object-contain"
             data-ai-hint={imageHint}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
         </div>
 
-        <div className="absolute top-6 right-6">
-            <Button size="icon" className="rounded-full bg-primary/20 h-10 w-10">
-                <Heart className="w-5 h-5 text-primary" />
-            </Button>
-        </div>
-
-        <div className="space-y-2 mt-20">
-             <h3 className="font-serif text-2xl font-bold text-foreground">
-                <span className="text-primary">•</span> {name}
-            </h3>
+        <div className="space-y-2 mt-20 z-10">
+          <h3 className="font-serif text-2xl">
+            <span className="text-primary">•</span> Blue{' '}
+            <span className="font-bold">Salad</span>
+          </h3>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {description}
           </p>

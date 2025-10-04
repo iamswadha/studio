@@ -11,6 +11,8 @@ import {
   Heart,
   Settings,
   LogOut,
+  Bookmark,
+  Menu
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -20,11 +22,11 @@ import { useRouter } from 'next/navigation';
 import { Logo } from './logo';
 
 const navItems = [
-  { href: '/dashboard', icon: Home, label: 'Dashboard' },
+  { href: '/dashboard', icon: LayoutGrid, label: 'Home' },
   { href: '/log-meal', icon: Utensils, label: 'Log Meal' },
   { href: '/progress', icon: BarChart3, label: 'Progress' },
-  { href: '/activity', icon: LayoutGrid, label: 'Activity' },
-  { href: '/food-menu', icon: Heart, label: 'Menu' },
+  { href: '/food-menu', icon: Heart, label: 'Food Menu' },
+  { href: '/activity', icon: Bookmark, label: 'Saved' },
 ];
 
 function NavItem({
@@ -45,12 +47,12 @@ function NavItem({
         className={cn(
           'flex flex-col items-center gap-1 p-2 rounded-lg transition-colors duration-200 md:flex-row md:gap-3 md:w-full md:justify-start',
           isActive
-            ? 'bg-primary/10 text-primary'
-            : 'text-muted-foreground hover:bg-primary/5 hover:text-primary'
+            ? 'text-primary'
+            : 'text-muted-foreground hover:text-primary'
         )}
       >
-        <Icon className="h-5 w-5" />
-        <span className="text-xs font-medium md:text-sm">{label}</span>
+        <Icon className="h-6 w-6" />
+        <span className="text-xs font-medium md:hidden">{label}</span>
       </div>
     </Link>
   );
@@ -66,14 +68,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex h-dvh flex-col md:flex-row bg-muted/40">
-      {/* Sidebar for Desktop */}
-      <aside className="hidden md:flex md:w-64 md:flex-col md:border-r md:bg-background">
-        <div className="flex h-full flex-col">
-          <div className="border-b p-4">
+    <div className="flex h-dvh flex-col md:flex-row bg-background">
+      {/* Sidebar for Desktop - Hidden in this design */}
+      <aside className="hidden md:flex md:w-24 md:flex-col md:border-r md:bg-background">
+        <div className="flex h-full flex-col items-center py-4">
+          <div className="p-4 border-b">
             <Logo />
           </div>
-          <nav className="flex-1 space-y-2 p-4">
+          <nav className="flex-1 space-y-4 p-4 mt-8">
             {navItems.map((item) => (
               <NavItem
                 key={item.href}
@@ -83,14 +85,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               />
             ))}
           </nav>
-          <div className="mt-auto space-y-2 p-4">
-             <Button variant="ghost" className="w-full justify-start gap-3 text-muted-foreground">
-                <Settings className="h-5 w-5" />
-                Settings
+          <div className="mt-auto space-y-4 p-4">
+             <Button variant="ghost" className="w-full justify-center text-muted-foreground">
+                <Settings className="h-6 w-6" />
             </Button>
-            <Button variant="ghost" className="w-full justify-start gap-3 text-muted-foreground" onClick={handleLogout}>
-                <LogOut className="h-5 w-5" />
-                Logout
+            <Button variant="ghost" className="w-full justify-center text-muted-foreground" onClick={handleLogout}>
+                <LogOut className="h-6 w-6" />
             </Button>
           </div>
         </div>
@@ -100,20 +100,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main className="flex-1 overflow-y-auto p-4 md:p-8">{children}</main>
 
         {/* Bottom Navigation for Mobile */}
-        <footer className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur-sm md:hidden">
+        <footer className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur-sm">
           <nav className="flex items-center justify-around p-2">
             {navItems.map((item) => (
-              <NavItem
-                key={item.href}
-                href={item.href}
-                icon={item.icon}
-                label={item.label}
-              />
+               <NavItem
+               key={item.href}
+               href={item.href}
+               icon={item.icon}
+               label={item.label}
+             />
             ))}
-             <button onClick={handleLogout} className="flex-1">
+            <button className="flex-1">
               <div className="flex flex-col items-center gap-1 p-2 rounded-lg text-muted-foreground">
-                <LogOut className="h-5 w-5" />
-                <span className="text-xs font-medium">Logout</span>
+                <Menu className="h-6 w-6" />
+                <span className="text-xs font-medium">More</span>
               </div>
             </button>
           </nav>
