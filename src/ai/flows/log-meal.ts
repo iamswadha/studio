@@ -25,7 +25,7 @@ const FoodItemSchema = z.object({
   calories: z.number(),
   protein: z.number(),
   carbohydrates: z.number(),
-  fat: z_dot_number(),
+  fat: z.number(),
   imageUrl: z.string().optional(),
 });
 
