@@ -116,8 +116,8 @@ export const logMealFlow = ai.defineFlow(
       batch.update(firstDocRef, {
         items: combinedItems,
         totalNutrition,
-        // Update imageUrl if a new one is provided for the whole meal
-        ...(imageUrl && { imageUrl: imageUrl }),
+        // Update imageUrl if a new one is provided for the whole meal, or if there wasn't one before.
+        imageUrl: imageUrl || existingData.imageUrl || items[0]?.imageUrl || '',
       });
       
       // If by some mistake there are multiple docs, merge them into the first and delete the rest.
