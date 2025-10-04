@@ -34,8 +34,7 @@ const foodItems = [
     description: 'with Vegetables',
     price: '23.50',
     rating: 5,
-    image:
-      'https://images.unsplash.com/photo-1598515213692-5f284144e544?q=80&w=1770&auto=format&fit=crop',
+    image: PlaceHolderImages.find((img) => img.id === 'meal-2')?.imageUrl || '',
     imageHint: 'chicken steak vegetables',
   },
   {
