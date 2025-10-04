@@ -10,11 +10,11 @@ body {
   :root {
     --background: 220 20% 98%;
     --foreground: 240 10% 3.9%;
-    --card: 210 40% 96.1%;
+    --card: 225 50% 98%; /* Light blue/lavender tint */
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 10 78% 54%;
+    --primary: 10 78% 54%; /* Coral/Orange accent */
     --primary-foreground: 0 0% 100%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
@@ -46,7 +46,7 @@ body {
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
-    --card: 224 71.4% 4.1%;
+    --card: 224 71% 10%; /* Darker blue */
     --card-foreground: 0 0% 98%;
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;

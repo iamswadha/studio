@@ -4,11 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutGrid,
-  BarChart3,
-  Heart,
-  Bookmark,
   Menu,
-  ShoppingBasket,
+  Bookmark,
   User,
   LogOut,
 } from 'lucide-react';
@@ -21,9 +18,9 @@ import { Logo } from './logo';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutGrid, label: 'Home' },
-  { href: '/food-menu', icon: ShoppingBasket, label: 'Shop' },
-  { href: '/progress', icon: Bookmark, label: 'Saved' },
-  { href: '/activity', icon: User, label: 'Profile' },
+  { href: '/food-menu', icon: Bookmark, label: 'Bookmark' },
+  { href: '/log-meal', icon: Menu, label: 'Menu' },
+  { href: '/profile', icon: User, label: 'Profile' },
 ];
 
 function NavItem({
