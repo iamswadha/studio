@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutGrid,
-  Bookmark,
+  BookOpen,
   LineChart,
   User,
   LogOut,
@@ -19,7 +19,7 @@ import { Logo } from './logo';
 
 const navItems = [
   { href: '/food-menu', icon: LayoutGrid, label: 'Home' },
-  { href: '/log-meal', icon: Bookmark, label: 'Diary' },
+  { href: '/log-meal', icon: BookOpen, label: 'Diary' },
   { href: '/progress', icon: LineChart, label: 'Progress' },
   { href: '/profile', icon: User, label: 'Profile' },
 ];

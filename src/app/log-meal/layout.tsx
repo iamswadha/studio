@@ -27,6 +27,15 @@ export type LoggedMeal = {
   timestamp: any;
 };
 
+export type PlannedMeal = {
+  id: string;
+  name: string;
+  imageUrl: string;
+  description: string;
+  planDate: any; // Firestore Timestamp
+};
+
+
 export type MealTime =
   | 'breakfast'
   | 'morningSnack'
@@ -46,16 +55,7 @@ export default function LogMealLayout({
 
   return (
     <AppShell>
-      <div className="flex flex-col gap-8">
-        <PageHeader
-            title="Diary"
-            description="This is where your meal diary used to be. It has been moved to the Home page."
-          />
-          <div className="text-center text-muted-foreground py-8">
-            <p>The meal diary has been moved to the Home page.</p>
-          </div>
-        {children}
-      </div>
+      {children}
     </AppShell>
   );
 }

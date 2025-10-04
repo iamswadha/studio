@@ -15,11 +15,15 @@ import {
 import {
   getIndianFoodSuggestions as getIndianFoodSuggestionsFlow,
   type IndianFoodSuggestionsInput,
+  type IndianFoodSuggestionsOutput,
 } from '@/ai/flows/get-indian-food-suggestions';
 import {
   generateMealImage,
   type GenerateMealImageInput,
 } from '@/ai/flows/generate-meal-image';
+import { getFirebase } from '@/firebase-server';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { startOfTomorrow } from 'date-fns';
 
 export async function getMealAnalysis(input: LogMealsWithHealthifySnapInput) {
   try {
@@ -64,7 +68,7 @@ export async function getFoodSuggestions(input: FoodSuggestionsInput) {
 
 export async function getIndianFoodSuggestions(
   input: IndianFoodSuggestionsInput
-) {
+): Promise<{ success: boolean, data?: IndianFoodSuggestionsOutput, error?: string }> {
   try {
     const result = await getIndianFoodSuggestionsFlow(input);
     return { success: true, data: result };
@@ -89,4 +93,33 @@ export async function generateMealImageAction(input: GenerateMealImageInput) {
       error: 'Failed to generate meal image. Please try again later.',
     };
   }
+}
+
+
+export async function planMealForTomorrow(meal: { name: string; imageUrl: string; description: string; }) {
+    try {
+        const { auth, firestore } = await getFirebase();
+        const user = auth.currentUser;
+
+        if (!user) {
+            return { success: false, error: "You must be logged in to plan a meal." };
+        }
+
+        const mealToPlan = {
+            userId: user.uid,
+            name: meal.name,
+            imageUrl: meal.imageUrl,
+            description: meal.description,
+            planDate: Timestamp.fromDate(startOfTomorrow()),
+            createdAt: Timestamp.now(),
+        };
+
+        const plannedMealsCol = collection(firestore, 'users', user.uid, 'plannedMeals');
+        await addDoc(plannedMealsCol, mealToPlan);
+
+        return { success: true };
+    } catch (error) {
+        console.error("Error planning meal:", error);
+        return { success: false, error: "Could not save the planned meal. Please try again." };
+    }
 }

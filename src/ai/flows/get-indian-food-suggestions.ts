@@ -20,6 +20,7 @@ export type IndianFoodSuggestionsInput = z.infer<
 const FoodSuggestionSchema = z.object({
   name: z.string().describe('The name of the Indian food item.'),
   imageUrl: z.string().describe('A URL for an image of the food item.'),
+  description: z.string().describe('A short, enticing description of the food item.'),
 });
 
 const IndianFoodSuggestionsOutputSchema = z.object({
@@ -43,7 +44,7 @@ const prompt = ai.definePrompt({
   output: {schema: IndianFoodSuggestionsOutputSchema},
   prompt: `You are an expert on Indian cuisine. The user is searching for Indian food items.
 Based on their query: {{{query}}}, provide a list of 5 relevant Indian food suggestions.
-For each suggestion, provide a realistic and appealing image URL. You can use Unsplash for images.
+For each suggestion, provide a realistic and appealing image URL and a short, one-sentence enticing description of the food. You can use Unsplash for images.
 `,
 });
 
