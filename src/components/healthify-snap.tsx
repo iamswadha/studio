@@ -40,6 +40,7 @@ import {
 } from '@/components/ui/select';
 import { PageHeader } from './page-header';
 import Link from 'next/link';
+import { logMeal } from '@/lib/actions';
 
 type FoodItem = {
   id: number;
@@ -49,6 +50,7 @@ type FoodItem = {
   carbohydrates: number;
 
   fat: number;
+  imageUrl?: string;
 };
 
 type MealTime =
@@ -123,6 +125,17 @@ export function HealthifySnap({
       const response = await getMealAnalysis({ photoDataUri: preview });
 
       if (response.success && response.data) {
+        if (response.data.foodItems.length === 0) {
+          setError('No food item identified. Please upload a food image.');
+          toast({
+            variant: 'destructive',
+            title: 'No Food Identified',
+            description: 'Please upload an image of a food item.',
+          });
+          setIsLoading(false);
+          return;
+        }
+
         const itemsWithNutrition = await Promise.all(
           response.data.foodItems.map(async (itemName) => {
             const nutrition = await getSingleItemNutrition({
@@ -264,17 +277,17 @@ export function HealthifySnap({
     [foodItems]
   );
 
-  const handleAddItem = async (itemName: string) => {
-    if (itemName.trim() === '') return;
-
+  const handleAddItem = async (suggestion: {name: string, imageUrl: string}) => {
+    if (suggestion.name.trim() === '') return;
+    
     setIsAdding(false);
 
     const nutrition = await getSingleItemNutrition({
-      foodItemName: itemName,
+      foodItemName: suggestion.name,
     });
     if (nutrition.success && nutrition.data) {
       const newId = nextId.current++;
-      setFoodItems([...foodItems, { id: newId, name: itemName, ...nutrition.data }]);
+      setFoodItems([...foodItems, { id: newId, name: suggestion.name, imageUrl: suggestion.imageUrl, ...nutrition.data }]);
     } else {
       toast({
         variant: 'destructive',
@@ -370,7 +383,7 @@ export function HealthifySnap({
                 <div className="w-full">
                   <FoodSearchCombobox
                     onSelect={(value) => {
-                      handleAddItem(value.name);
+                      handleAddItem(value);
                       setIsAdding(false);
                     }}
                   />

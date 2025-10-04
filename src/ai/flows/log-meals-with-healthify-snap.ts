@@ -52,6 +52,7 @@ const prompt = ai.definePrompt({
   prompt: `You are an AI assistant specialized in analyzing meal photos and estimating their nutritional content.
 
   Analyze the photo of the meal provided. Identify all the distinct food items present.
+  If you cannot identify any food items in the image, return an empty list for foodItems and zero for all nutritional values.
   For each item, determine its most likely name. Also, suggest up to 3 alternative or more specific names.
   Then, estimate the total calorie count and macronutrient breakdown (protein, carbohydrates, and fat) for the entire meal.
 
