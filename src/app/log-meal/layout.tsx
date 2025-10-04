@@ -33,6 +33,7 @@ export type FoodItem = {
   protein: number;
   carbohydrates: number;
   fat: number;
+  imageUrl?: string;
 };
 
 export type LoggedMeal = {

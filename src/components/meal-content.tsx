@@ -85,6 +85,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
           protein: nutrition.data.protein,
           carbohydrates: nutrition.data.carbohydrates,
           fat: nutrition.data.fat,
+          imageUrl: suggestion.imageUrl,
         },
       ],
       totalNutrition: {
@@ -93,7 +94,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
         carbohydrates: nutrition.data.carbohydrates,
         fat: nutrition.data.fat,
       },
-      imageUrl: suggestion.imageUrl,
+      imageUrl: suggestion.imageUrl, // Save image URL at the meal level as well
       userId: user.uid,
       timestamp: Timestamp.fromDate(mealTimestamp),
     };
