@@ -94,7 +94,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
         carbohydrates: nutrition.data.carbohydrates,
         fat: nutrition.data.fat,
       },
-      imageUrl: suggestion.imageUrl, // Save image URL at the meal level as well
+      imageUrl: suggestion.imageUrl,
       userId: user.uid,
       timestamp: Timestamp.fromDate(mealTimestamp),
     };
@@ -159,53 +159,49 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
             {loggedMeals.map((meal) => (
               <div key={meal.id}>
                 <Separator />
-                <div className="flex flex-col sm:flex-row justify-between items-start pt-6 gap-4">
-                    <div className="flex-grow flex flex-col md:flex-row items-start gap-4 w-full">
-                        <div className="w-full md:w-40 flex-shrink-0">
-                        {meal.imageUrl && (
-                            <Image
-                            src={meal.imageUrl}
-                            alt="Logged meal"
-                            width={150}
-                            height={150}
-                            className="rounded-lg object-cover aspect-square w-full"
-                            />
-                        )}
-                        </div>
-                        <div className='w-full space-y-3'>
-                            {meal.items.map(item => (
-                                <div key={item.id} className="grid grid-cols-[1fr_auto] items-center gap-2">
-                                    <div>
-                                        <p className="font-bold">{item.name}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {Math.round(item.protein)}g P, {Math.round(item.carbohydrates)}g C, {Math.round(item.fat)}g F
-                                        </p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="font-bold">{Math.round(item.calories)} Cal</p>
-                                    </div>
-                                </div>
-                            ))}
-                            <Separator />
-                            <div className="text-right font-bold">
-                                Total: {Math.round(meal.totalNutrition.calories)} Cal
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex flex-row sm:flex-col self-start">
-                        <Button size="icon" variant="ghost" className="h-8 w-8" disabled>
-                            <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-8 w-8 text-destructive"
-                            onClick={() => handleDeleteMeal(meal.id)}
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    </div>
-                </div>
+                {meal.items.map(item => (
+                  <div key={item.id} className="flex flex-col sm:flex-row justify-between items-start pt-6 gap-4">
+                      <div className="flex-grow flex flex-col md:flex-row items-start gap-4 w-full">
+                          <div className="w-full md:w-40 flex-shrink-0">
+                          {item.imageUrl && (
+                              <Image
+                              src={item.imageUrl}
+                              alt={item.name}
+                              width={150}
+                              height={150}
+                              className="rounded-lg object-cover aspect-square w-full"
+                              />
+                          )}
+                          </div>
+                          <div className='w-full space-y-3'>
+                              <div className="grid grid-cols-[1fr_auto] items-center gap-2">
+                                  <div>
+                                      <p className="font-bold">{item.name}</p>
+                                      <p className="text-sm text-muted-foreground">
+                                          {Math.round(item.protein)}g P, {Math.round(item.carbohydrates)}g C, {Math.round(item.fat)}g F
+                                      </p>
+                                  </div>
+                                  <div className="text-right">
+                                      <p className="font-bold">{Math.round(item.calories)} Cal</p>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                      <div className="flex flex-row sm:flex-col self-start">
+                          <Button size="icon" variant="ghost" className="h-8 w-8" disabled>
+                              <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 text-destructive"
+                              onClick={() => handleDeleteMeal(meal.id)}
+                          >
+                              <Trash2 className="h-4 w-4" />
+                          </Button>
+                      </div>
+                  </div>
+                ))}
               </div>
               ))}
           </div>
