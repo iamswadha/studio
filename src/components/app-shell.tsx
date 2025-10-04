@@ -1,60 +1,61 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import {
   BarChart3,
   HeartPulse,
+  Home,
   LayoutDashboard,
   LogOut,
   Settings,
   User as UserIcon,
   UtensilsCrossed,
   ShoppingBasket,
+  Search
 } from 'lucide-react';
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/logo';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useAuth, useUser } from '@/firebase';
+import { cn } from '@/lib/utils';
+import { useUser, useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
-import { Skeleton } from './ui/skeleton';
-import { Separator } from './ui/separator';
-import { ThemeToggle } from './theme-toggle';
+import { useRouter } from 'next/navigation';
 
 const navItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/food-menu', icon: ShoppingBasket, label: 'Food Menu' },
-  { href: '/activity', icon: HeartPulse, label: 'Activity' },
+  { href: '/dashboard', icon: Home, label: 'Home' },
+  { href: '/food-menu', icon: Search, label: 'Search' },
   { href: '/log-meal', icon: UtensilsCrossed, label: 'Log Meal' },
   { href: '/progress', icon: BarChart3, label: 'Progress' },
+  { href: '/activity', icon: UserIcon, label: 'Profile' },
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+function BottomNavItem({
+  href,
+  icon: Icon,
+  label,
+}: {
+  href: string;
+  icon: React.ElementType;
+  label: string;
+}) {
   const pathname = usePathname();
+  const isActive = pathname === href;
+
+  return (
+    <Link href={href} className="flex-1">
+      <div
+        className={cn(
+          'flex flex-col items-center justify-center gap-1 p-2 rounded-lg',
+          isActive ? 'text-primary' : 'text-muted-foreground'
+        )}
+      >
+        <Icon className="h-6 w-6" />
+        <span className="text-xs font-medium">{label}</span>
+      </div>
+    </Link>
+  );
+}
+
+export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const userAvatar = PlaceHolderImages.find((img) => img.id === 'user-avatar');
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
 
@@ -64,118 +65,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
-          <div className="flex items-center justify-between">
-            <Logo />
-            <SidebarTrigger className="hidden md:flex" />
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <Link href={item.href}>
-                  <SidebarMenuButton
-                    isActive={pathname.startsWith(item.href)}
-                    tooltip={item.label}
-                  >
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            ))}
-             <Separator className="my-2" />
-             <SidebarMenuItem>
-                <SidebarMenuButton onClick={handleLogout} tooltip="Log Out">
-                    <LogOut />
-                    <span>Log Out</span>
-                </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                className="w-full justify-start gap-3 p-2 h-auto"
-              >
-                {isUserLoading ? (
-                  <>
-                    <Skeleton className="h-9 w-9 rounded-full" />
-                    <div className="flex flex-col gap-1.5">
-                      <Skeleton className="h-4 w-20" />
-                      <Skeleton className="h-3 w-32" />
-                    </div>
-                  </>
-                ) : user ? (
-                  <>
-                    <Avatar className="h-9 w-9">
-                      {user.photoURL ? (
-                        <AvatarImage src={user.photoURL} alt={user.displayName || ''} />
-                      ) : (
-                        userAvatar && <AvatarImage src={userAvatar.imageUrl} alt="User avatar" />
-                      )}
-                      <AvatarFallback>
-                        {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="text-left group-data-[collapsible=icon]:hidden">
-                      <p className="font-medium text-sm truncate">
-                        {user.displayName || 'User'}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {user.email}
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                   <>
-                    <Avatar className="h-9 w-9">
-                      <AvatarFallback>U</AvatarFallback>
-                    </Avatar>
-                     <div className="text-left group-data-[collapsible=icon]:hidden">
-                      <p className="font-medium text-sm">Guest</p>
-                    </div>
-                   </>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" align="start" className="w-56">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <UserIcon className="mr-2 h-4 w-4" />
-                <span>Profile</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Settings className="mr-2 h-4 w-4" />
-                <span>Settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </SidebarFooter>
-      </Sidebar>
-      <div className="flex flex-1 flex-col">
-        <header className="flex h-14 items-center gap-4 border-b bg-background/95 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
-          <SidebarTrigger className="flex md:hidden" />
-          <div className="flex-1">
-            {/* Can add breadcrumbs or page title here */}
-          </div>
-          <ThemeToggle />
-        </header>
-        <SidebarInset>
-          <main className="flex-1 p-4 md:p-8">{children}</main>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+    <div className="flex h-screen flex-col bg-background">
+      <main className="flex-1 overflow-y-auto">{children}</main>
+
+      {/* Bottom Navigation Bar */}
+      <footer className="sticky bottom-0 z-50 border-t bg-background/95 backdrop-blur-sm">
+        <nav className="flex items-center justify-around p-2">
+          {navItems.map((item) => (
+            <BottomNavItem
+              key={item.href}
+              href={item.href}
+              icon={item.icon}
+              label={item.label}
+            />
+          ))}
+        </nav>
+      </footer>
+    </div>
   );
 }

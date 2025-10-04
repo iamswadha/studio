@@ -41,9 +41,9 @@ const generateMealImageFlow = ai.defineFlow(
   async input => {
     const {media} = await ai.generate({
       model: 'googleai/imagen-4.0-fast-generate-001',
-      prompt: `Generate a photorealistic image of a meal on a clean, white plate. The meal consists of ${input.foodItems.join(
+      prompt: `Generate a 3D, aesthetic, high-resolution PNG image of a meal with a transparent background. The meal consists of ${input.foodItems.join(
         ', '
-      )}. The image should be well-lit, appetizing, and shot from a top-down or 45-degree angle.`,
+      )}. The style should be clean, modern, and slightly stylized, suitable for a high-end food application. The meal should be presented on a simple, elegant ceramic plate.`,
     });
 
     if (!media.url) {

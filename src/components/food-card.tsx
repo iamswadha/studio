@@ -1,14 +1,11 @@
 'use client';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Plus, Star } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 interface FoodCardProps {
   name: string;
   description: string;
-  price: string;
-  rating: number;
   image: string;
   imageHint: string;
 }
@@ -16,34 +13,40 @@ interface FoodCardProps {
 export function FoodCard({
   name,
   description,
-  price,
-  rating,
   image,
   imageHint,
 }: FoodCardProps) {
   return (
-    <Card className="relative rounded-3xl pt-24 text-center border-none shadow-xl">
-      <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-40 h-40">
-        <Image
-          src={image}
-          alt={name}
-          fill
-          className="object-contain drop-shadow-2xl"
-          data-ai-hint={imageHint}
-        />
-      </div>
-      <CardContent className="flex flex-col items-center gap-2">
-        <p className="text-sm text-muted-foreground/80">${price}</p>
-        <h3 className="font-bold text-lg">{name}</h3>
-        <p className="text-sm text-muted-foreground">{description}</p>
-        <div className="flex items-center gap-1 text-sm text-muted-foreground mt-2">
-          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-          <span className="font-bold text-foreground">{rating}</span>
+    <div className="relative aspect-[3/4] w-full max-w-sm mx-auto pt-12">
+      {/* Background Card */}
+      <div className="relative h-full w-full rounded-[40px] bg-card shadow-2xl p-6 flex flex-col justify-end items-center text-center" style={{backgroundColor: '#e6f0ff'}}>
+        
+        <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 w-48 h-48">
+          <Image
+            src={image}
+            alt={name}
+            fill
+            className="object-contain drop-shadow-2xl"
+            data-ai-hint={imageHint}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
         </div>
-        <Button size="icon" className="rounded-full mt-4 bg-primary/20 hover:bg-primary/30 text-primary">
-          <Plus className="w-5 h-5" />
-        </Button>
-      </CardContent>
-    </Card>
+
+        <div className="absolute top-6 right-6">
+            <Button size="icon" className="rounded-full bg-primary/20 h-10 w-10">
+                <Heart className="w-5 h-5 text-primary" />
+            </Button>
+        </div>
+
+        <div className="space-y-2 mt-20">
+             <h3 className="font-serif text-2xl font-bold text-foreground">
+                <span className="text-primary">•</span> {name}
+            </h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {description}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
