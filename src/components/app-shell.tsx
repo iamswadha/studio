@@ -4,27 +4,22 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   BarChart3,
-  HeartPulse,
   Home,
-  LayoutDashboard,
-  LogOut,
-  Settings,
-  User as UserIcon,
-  UtensilsCrossed,
+  User,
   ShoppingBasket,
-  Search
+  Search,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useUser, useAuth } from '@/firebase';
+import { useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 
 const navItems = [
   { href: '/dashboard', icon: Home, label: 'Home' },
   { href: '/food-menu', icon: Search, label: 'Search' },
-  { href: '/log-meal', icon: UtensilsCrossed, label: 'Log Meal' },
+  { href: '/log-meal', icon: ShoppingBasket, label: 'Shop' },
   { href: '/progress', icon: BarChart3, label: 'Progress' },
-  { href: '/activity', icon: UserIcon, label: 'Profile' },
+  { href: '/activity', icon: User, label: 'Profile' },
 ];
 
 function BottomNavItem({
@@ -56,7 +51,6 @@ function BottomNavItem({
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, isUserLoading } = useUser();
   const auth = useAuth();
 
   const handleLogout = async () => {
@@ -66,7 +60,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <main className="flex-1 overflow-y-auto p-4">{children}</main>
 
       {/* Bottom Navigation Bar */}
       <footer className="sticky bottom-0 z-50 border-t bg-background/95 backdrop-blur-sm">
