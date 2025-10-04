@@ -28,7 +28,7 @@ export default function HealthifySnapPage() {
         totalNutrition: any;
         imageUrl?: string;
     }) => {
-        if (!user || !meal.mealTime) return;
+        if (!user || !meal.mealTime || !firestore) return;
 
         const selectedDate = dateParam ? new Date(dateParam) : new Date();
 
