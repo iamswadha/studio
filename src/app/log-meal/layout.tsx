@@ -1,6 +1,5 @@
 'use client';
 
-import { AppShell } from '@/components/app-shell';
 import { PageHeader } from '@/components/page-header';
 
 export type FoodItem = {
@@ -54,8 +53,8 @@ export default function LogMealLayout({
 }) {
 
   return (
-    <AppShell>
+    <>
       {children}
-    </AppShell>
+    </>
   );
 }
