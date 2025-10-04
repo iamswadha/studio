@@ -12,6 +12,10 @@ import {
   getFoodSuggestions as getFoodSuggestionsFlow,
   type FoodSuggestionsInput,
 } from '@/ai/flows/get-food-suggestions';
+import {
+    generateMealImage,
+    type GenerateMealImageInput,
+} from '@/ai/flows/generate-meal-image';
 
 export async function getMealAnalysis(input: LogMealsWithHealthifySnapInput) {
   try {
@@ -52,4 +56,17 @@ export async function getFoodSuggestions(input: FoodSuggestionsInput) {
       error: 'Failed to get food suggestions. The AI model might be unavailable. Please try again later.',
     };
   }
+}
+
+export async function generateMealImageAction(input: GenerateMealImageInput) {
+    try {
+        const result = await generateMealImage(input);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('Error in generateMealImageAction:', error);
+        return {
+        success: false,
+        error: 'Failed to generate meal image. Please try again later.',
+        };
+    }
 }

@@ -65,12 +65,12 @@ export function HealthifySnap({
     mealTime: MealTime;
     items: FoodItem[];
     totalNutrition: any;
-    imageUrl?: string;
-  }) => void;
+  }) => Promise<void>;
 }) {
   const [preview, setPreview] = useState<string | null>(null);
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLogging, setIsLogging] = useState(false);
   const [isEditing, setIsEditing] = useState<number | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -164,28 +164,41 @@ export function HealthifySnap({
     }
   };
 
-  const handleLogMealClick = () => {
+  const handleLogMealClick = async () => {
     if (foodItems.length === 0) return;
+    setIsLogging(true);
 
-    onLogMeal({
-      mealTime,
-      items: foodItems,
-      totalNutrition,
-      imageUrl: preview || undefined,
-    });
+    try {
+        await onLogMeal({
+          mealTime,
+          items: foodItems,
+          totalNutrition,
+        });
 
-    toast({
-      title: 'Meal Logged!',
-      description: `Successfully logged ${Math.round(
-        totalNutrition.calories
-      )} kcal for ${mealTime}.`,
-    });
+        toast({
+          title: 'Meal Logged!',
+          description: `Successfully logged ${Math.round(
+            totalNutrition.calories
+          )} kcal for ${mealTime}.`,
+        });
 
-    setPreview(null);
-    setFoodItems([]);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+        // Reset state after successful logging
+        setPreview(null);
+        setFoodItems([]);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+    } catch(e) {
+        console.error("Failed to log meal", e);
+        toast({
+          variant: 'destructive',
+          title: 'Logging Failed',
+          description: 'Could not save your meal. Please try again.',
+        });
+    } finally {
+        setIsLogging(false);
     }
+
   };
 
   const handleRemoveItem = (id: number) => {
@@ -504,9 +517,9 @@ export function HealthifySnap({
                 onClick={handleLogMealClick}
                 className="w-full"
                 variant="secondary"
-                disabled={isLoading}
+                disabled={isLogging}
               >
-                {isLoading && foodItems.some((item) => item.calories === 0) ? (
+                {isLogging ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   'Log This Meal'
