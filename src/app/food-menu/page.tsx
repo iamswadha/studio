@@ -131,15 +131,7 @@ export default function FoodMenuPage() {
   return (
     <AppShell>
       <div className="flex flex-col gap-4">
-        <header className="flex justify-between items-center">
-          <h1 className="font-serif text-4xl">
-            Break<span className="font-bold">fast</span>
-          </h1>
-          <div className="flex items-center gap-4">
-            <Search className="h-6 w-6 text-muted-foreground" />
-            <Grid className="h-6 w-6 text-muted-foreground" />
-          </div>
-        </header>
+        <PageHeader title="Diary" />
 
         <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
 
