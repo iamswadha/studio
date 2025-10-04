@@ -4,8 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutGrid,
-  BookOpen,
-  LineChart,
+  ShoppingBasket,
+  Bookmark,
   User,
   LogOut,
 } from 'lucide-react';
@@ -17,9 +17,9 @@ import { useRouter } from 'next/navigation';
 import { Logo } from './logo';
 
 const navItems = [
-  { href: '/food-menu', icon: LayoutGrid, label: 'Home' },
-  { href: '/log-meal', icon: BookOpen, label: 'Diary' },
-  { href: '/progress', icon: LineChart, label: 'Progress' },
+  { href: '/dashboard', icon: LayoutGrid, label: 'Home' },
+  { href: '/shop', icon: ShoppingBasket, label: 'Shop' },
+  { href: '/saved', icon: Bookmark, label: 'Saved' },
   { href: '/profile', icon: User, label: 'Profile' },
 ];
 

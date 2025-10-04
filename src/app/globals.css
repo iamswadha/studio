@@ -8,32 +8,32 @@ body {
 
 @layer base {
   :root {
-    --background: 40 10% 98%; /* Lighter, almost white pink */
-    --foreground: 350 5% 15%; /* Dark, near-black for text */
+    --background: 0 0% 98%; /* Almost white */
+    --foreground: 240 10% 3.9%; /* Dark grey/black for text */
 
     --card: 0 0% 100%; /* White cards */
-    --card-foreground: 350 5% 15%;
+    --card-foreground: 240 10% 3.9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 350 5% 15%;
+    --popover-foreground: 240 10% 3.9%;
 
-    --primary: 15 91% 59%; /* Orange */
-    --primary-foreground: 0 0% 100%; /* White text on primary */
+    --primary: 15 91% 59%; /* Orange from previous theme */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 350 80% 95%; /* Light pink for secondary elements */
-    --secondary-foreground: 15 80% 30%; /* Darker orange text on secondary */
+    --secondary: 240 4.8% 95.9%; /* Light grey for secondary elements */
+    --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 350 10% 90%; /* Light gray-pink for muted backgrounds */
-    --muted-foreground: 350 5% 45%; /* Grayer text for muted content */
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 350 90% 96%; /* A slightly more saturated light pink for accents */
-    --accent-foreground: 15 85% 40%; /* Dark orange for accent text */
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 350 20% 90%;
-    --input: 350 20% 90%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
     --ring: 15 91% 59%;
 
     --radius: 0.5rem;
@@ -44,13 +44,13 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     
-    --sidebar-background: 40 10% 98%;
-    --sidebar-foreground: 350 5% 15%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 10% 3.9%;
     --sidebar-primary: 15 91% 59%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 350 80% 95%;
-    --sidebar-accent-foreground: 15 80% 30%;
-    --sidebar-border: 350 20% 90%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 240 5.9% 90%;
     --sidebar-ring: 15 91% 59%;
   }
 
