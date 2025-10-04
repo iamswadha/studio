@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import { AppShell } from '@/components/app-shell';
@@ -129,53 +130,47 @@ export default function FoodMenuPage() {
 
   return (
     <AppShell>
-        <div className="flex flex-col gap-4">
-            <header className="flex justify-between items-center">
-                <h1 className="font-serif text-4xl">
-                Break<span className="font-bold">fast</span>
-                </h1>
-                <div className="flex items-center gap-4">
-                <Search className="h-6 w-6 text-muted-foreground" />
-                <Grid className="h-6 w-6 text-muted-foreground" />
-                </div>
-            </header>
+      <div className="flex flex-col gap-4">
+        <header className="flex justify-between items-center">
+          <h1 className="font-serif text-4xl">
+            Break<span className="font-bold">fast</span>
+          </h1>
+          <div className="flex items-center gap-4">
+            <Search className="h-6 w-6 text-muted-foreground" />
+            <Grid className="h-6 w-6 text-muted-foreground" />
+          </div>
+        </header>
 
-            <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
+        <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
 
-            <Tabs 
-              defaultValue="breakfast" 
-              className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8" 
-              orientation="vertical"
-              value={activeMealTab} 
-              onValueChange={(value) => setActiveMealTab(value as MealTime)}
-            >
-                <TabsList className="flex-col h-full bg-transparent p-0 gap-2">
-                    {mealTabs.map((meal) => (
-                        <TabsTrigger 
-                            key={meal.value} 
-                            value={meal.value} 
-                            className={cn(
-                                'w-full justify-start text-lg p-3 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-none'
-                            )}
-                        >
-                            {meal.label}
-                        </TabsTrigger>
-                    ))}
-                </TabsList>
-
-                <div className="w-full">
-                    {mealTabs.map((meal) => (
-                        <TabsContent key={meal.value} value={meal.value} className="mt-0">
-                            <MealContent
-                            mealTime={meal.value as MealTime}
-                            loggedMeals={loggedMeals[meal.value as MealTime] || []}
-                            currentDate={currentDate}
-                            />
-                        </TabsContent>
-                    ))}
-                </div>
-            </Tabs>
+        <div className="flex justify-center my-4">
+          <div className="flex items-center gap-2 rounded-full bg-card p-1">
+            {mealTabs.map((filter) => (
+              <Button
+                key={filter.value}
+                variant={activeMealTab === filter.value ? 'secondary' : 'ghost'}
+                size="sm"
+                className="rounded-full"
+                onClick={() => setActiveMealTab(filter.value as MealTime)}
+              >
+                {filter.label}
+              </Button>
+            ))}
+          </div>
         </div>
+
+        <div className="w-full">
+            {mealTabs.map((meal) => (
+                <div key={meal.value} className={cn(activeMealTab === meal.value ? 'block' : 'hidden' )}>
+                    <MealContent
+                    mealTime={meal.value as MealTime}
+                    loggedMeals={loggedMeals[meal.value as MealTime] || []}
+                    currentDate={currentDate}
+                    />
+                </div>
+            ))}
+        </div>
+      </div>
     </AppShell>
   );
 }
