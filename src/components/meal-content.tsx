@@ -112,11 +112,6 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="flex justify-between items-center">
-            <span className="capitalize">{mealTime.replace('Snack', ' Snack')}</span>
-        </CardTitle>
-      </CardHeader>
       <CardContent>
         {loggedMeals.length === 0 ? (
           <div className="text-center text-muted-foreground py-8 space-y-4">
