@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -20,7 +21,8 @@ import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Line, LineChart } from 'rec
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy } from 'lucide-react';
+import { Flame, Droplets, HeartPulse, Trophy } from 'lucide-react';
+import Link from 'next/link';
 
 const chartDataWeekly = [
   { day: 'Mon', calories: 2200, water: 8 },
@@ -73,6 +75,73 @@ export default function ProgressPage() {
           title="Your Progress"
           description="Visualize your journey and celebrate your milestones. Consistency is key!"
         />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Calories Consumed
+              </CardTitle>
+              <Flame className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">1,450 / 2,200 kcal</div>
+              <p className="text-xs text-muted-foreground">
+                +200 from yesterday
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Link
+                href="/log-meal"
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                Log another meal
+              </Link>
+            </CardFooter>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Water Intake</CardTitle>
+              <Droplets className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">6 / 8 glasses</div>
+              <p className="text-xs text-muted-foreground">
+                You're almost there!
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Link
+                href="#"
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                Log water
+              </Link>
+            </CardFooter>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Active Energy
+              </CardTitle>
+              <HeartPulse className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">340 kcal</div>
+              <p className="text-xs text-muted-foreground">
+                from your 30-min HIIT workout
+              </p>
+            </CardContent>
+            <CardFooter>
+              <Link
+                href="/activity"
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                View activity
+              </Link>
+            </CardFooter>
+          </Card>
+        </div>
 
         <Card>
           <CardHeader>
