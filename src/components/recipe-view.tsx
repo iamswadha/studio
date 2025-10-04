@@ -40,7 +40,7 @@ export function RecipeView({ recipe, onPlan }: RecipeViewProps) {
       <DialogContent className="max-w-md sm:max-w-2xl p-0">
         <ScrollArea className="max-h-[90vh]">
           <div className="p-6">
-            <DialogHeader className="relative">
+            <DialogHeader className="relative -mx-6 -mt-6 mb-6">
               <Image
                 src={recipe.imageUrl}
                 alt={recipe.name}
@@ -58,7 +58,7 @@ export function RecipeView({ recipe, onPlan }: RecipeViewProps) {
               </div>
             </DialogHeader>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h3 className="font-semibold text-lg mb-2">Ingredients</h3>
                 <ul className="list-disc list-inside text-muted-foreground space-y-1">
