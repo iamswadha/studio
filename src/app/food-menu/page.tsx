@@ -21,6 +21,8 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, where, Timestamp } from 'firebase/firestore';
 import { startOfTomorrow, format } from 'date-fns';
 import type { PlannedMeal } from '@/app/log-meal/layout';
+import { useState } from 'react';
+import { useDebounce } from '@/hooks/use-debounce';
 
 const mealCategories = [
   { name: 'Sugar-Free' },
@@ -100,10 +102,13 @@ function PlannedMeals() {
 
 export default function FoodMenuPage() {
   const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState('healthy');
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const { data: foodSuggestions, isLoading: isLoadingSuggestions } = useQuery({
-    queryKey: ['food-suggestions-indian'],
-    queryFn: () => getIndianFoodSuggestions({ query: 'healthy' }),
+    queryKey: ['food-suggestions-indian', debouncedSearchQuery],
+    queryFn: () => getIndianFoodSuggestions({ query: debouncedSearchQuery }),
+    enabled: debouncedSearchQuery.length > 0,
   });
 
   const handleSaveForTomorrow = async (meal: { name: string; imageUrl: string; description: string }) => {
@@ -132,7 +137,12 @@ export default function FoodMenuPage() {
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input placeholder="Search for recipes..." className="pl-10 !h-12" />
+          <Input 
+            placeholder="Search for recipes like 'rajma chawal'..." 
+            className="pl-10 !h-12"
+            value={searchQuery === 'healthy' ? '' : searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
           <Button
             variant="ghost"
             size="icon"
@@ -148,6 +158,7 @@ export default function FoodMenuPage() {
               key={cat.name}
               variant="secondary"
               className="rounded-full shrink-0"
+              onClick={() => setSearchQuery(cat.name)}
             >
               {cat.name}
             </Button>
