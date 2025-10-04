@@ -45,7 +45,7 @@ function NavItem({
             : 'text-muted-foreground hover:text-primary'
         )}
       >
-        <Icon className="h-6 w-6" />
+        <Icon className={cn('h-6 w-6', isActive && 'fill-primary')} />
         <span className="text-xs font-medium">
           {label}
         </span>
@@ -59,8 +59,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
 
   const handleLogout = async () => {
-    await signOut(auth);
-    router.push('/signup');
+    if (auth) {
+        await signOut(auth);
+        router.push('/signup');
+    }
   };
 
   return (
