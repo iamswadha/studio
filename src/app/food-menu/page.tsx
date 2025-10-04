@@ -14,7 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Search, Grid } from 'lucide-react';
+import { Search, Grid, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   useUser,
@@ -185,7 +185,7 @@ export default function FoodMenuPage() {
                 className="w-full"
               >
                 <CarouselContent className="-ml-10">
-                  {foodSuggestions?.data?.suggestions.map((food, index) => (
+                  {foodSuggestions?.suggestions.map((food, index) => (
                     <CarouselItem
                       key={index}
                       className="md:basis-1/2 lg:basis-3/4 pl-10"
