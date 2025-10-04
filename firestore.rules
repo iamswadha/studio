@@ -1,115 +1,146 @@
 /**
- * @file Firestore Security Rules
- * @description This ruleset enforces a strict user-ownership model for all data.
+ * @fileoverview Firestore Security Rules for OyeBhukkaD Application
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model.  Each user has a dedicated
+ * data tree under `/users/{userId}` where they can store their profile, meals,
+ * activity logs, and planned meals. No data is publicly accessible without authentication.
  *
  * Data Structure:
- * - /users/{userId}: Stores user profile data. Only the authenticated user can read/write their own profile.
- * - /users/{userId}/meals/{mealId}: Stores meal logs. Only the authenticated user can read/write their own meals.
- * - /users/{userId}/activityLogs/{activityLogId}: Stores activity logs. Only the authenticated user can read/write their own activity logs.
+ * - `/users/{userId}`: Stores user profile information. The `userId` corresponds to the
+ *   Firebase Auth UID.
+ * - `/users/{userId}/meals/{mealId}`: Stores individual meal logs for a user.
+ * - `/users/{userId}/activityLogs/{activityLogId}`: Stores activity logs for a user.
+ * - `/users/{userId}/plannedMeals/{plannedMealId}`: Stores planned meals for a user.
  *
  * Key Security Decisions:
- * - No user listing is allowed.
- * - All data is private and user-owned.
- * - Data shapes are not strictly enforced beyond authorization-critical fields.
+ * - User listing is disallowed.
+ * - Only authenticated users can access data.
+ * - Each user can only access data under their own `userId` path.
  *
- * Authorization Independence via Path-Based Ownership:
- * To ensure Authorization Independence and prevent slow, costly, or even impossible `get()` calls in security rules,
- * all user-owned data is nested under the `/users/{userId}` path. This allows us to use the `isOwner(userId)` helper function
- * for simple, performant authorization checks.
+ * Denormalization for Authorization:
+ * The `meals`, `activityLogs`, and `plannedMeals` subcollections include the `userId` in
+ * each document. This denormalization is critical for efficient and secure querying
+ * and avoids the need for complex `get()` calls in the security rules.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Controls access to user profile documents.
+     * @description Enforces access control for user profiles.
      * @path /users/{userId}
-     * @allow (create) Authenticated user can create their own profile if the userId matches their auth.uid.
-     * @allow (get, update, delete) Authenticated user can get, update, or delete their own profile.
-     * @deny (create) User cannot create a profile with an ID that does not match their own.
-     * @deny (get, update, delete) User cannot get, update, or delete another user's profile.
-     * @principle Enforces document ownership for all operations on user profiles.
+     * @allow (create) - Authenticated user can create their own profile if the userId matches their auth.uid.
+     * @allow (get, update, delete) - Authenticated user can access/modify their own profile.
+     * @deny (create) - If the `userId` does not match `auth.uid`.
+     * @deny (list) - Listing all users is not permitted.
+     * @deny (update,delete) - If the document does not exist
+     * @principle Enforces document ownership; users can only manage their own profile.
      */
     match /users/{userId} {
-      //Function to check if the user is signed in
       function isSignedIn() {
-          return request.auth != null;
+        return request.auth != null;
       }
 
-      // Function to check if the requested user id is same as authenticated user id
       function isOwner(userId) {
-        return request.auth.uid == userId;
+        return isSignedIn() && request.auth.uid == userId;
       }
 
-      //Function to check if the user is the owner and document exists
       function isExistingOwner(userId) {
         return isOwner(userId) && resource != null;
       }
 
       allow get: if isOwner(userId);
       allow list: if false;
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to meal log documents within a user's profile.
+     * @description Enforces access control for meal logs under a user's profile.
      * @path /users/{userId}/meals/{mealId}
-     * @allow (create) Authenticated user can create a meal log under their profile.
-     * @allow (get, list, update, delete) Authenticated user can get, list, update, or delete their own meal logs.
-     * @deny (create, get, list, update, delete) User cannot create, get, list, update, or delete meal logs for other users.
-     * @principle Enforces document ownership for all operations on meal logs.
+     * @allow (create) - Authenticated user can create meal logs under their own profile.
+     * @allow (get, list, update, delete) - Authenticated user can access/modify their own meal logs.
+     * @deny (create) - If the `userId` does not match `auth.uid`.
+     * @deny (update,delete) - If the document does not exist
+     * @principle Enforces document ownership; users can only manage their own meal logs.
      */
     match /users/{userId}/meals/{mealId} {
-      //Function to check if the user is signed in
       function isSignedIn() {
-          return request.auth != null;
+        return request.auth != null;
       }
 
-      // Function to check if the requested user id is same as authenticated user id
       function isOwner(userId) {
-        return request.auth.uid == userId;
+        return isSignedIn() && request.auth.uid == userId;
       }
 
-      //Function to check if the user is the owner and document exists
       function isExistingOwner(userId) {
         return isOwner(userId) && resource != null;
       }
+
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isExistingOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Controls access to activity log documents within a user's profile.
+     * @description Enforces access control for activity logs under a user's profile.
      * @path /users/{userId}/activityLogs/{activityLogId}
-     * @allow (create) Authenticated user can create an activity log under their profile.
-     * @allow (get, list, update, delete) Authenticated user can get, list, update, or delete their own activity logs.
-     * @deny (create, get, list, update, delete) User cannot create, get, list, update, or delete activity logs for other users.
-     * @principle Enforces document ownership for all operations on activity logs.
+     * @allow (create) - Authenticated user can create activity logs under their own profile.
+     * @allow (get, list, update, delete) - Authenticated user can access/modify their own activity logs.
+     * @deny (create) - If the `userId` does not match `auth.uid`.
+     * @deny (update,delete) - If the document does not exist
+     * @principle Enforces document ownership; users can only manage their own activity logs.
      */
     match /users/{userId}/activityLogs/{activityLogId} {
-      //Function to check if the user is signed in
       function isSignedIn() {
-          return request.auth != null;
+        return request.auth != null;
       }
 
-      // Function to check if the requested user id is same as authenticated user id
       function isOwner(userId) {
-        return request.auth.uid == userId;
+        return isSignedIn() && request.auth.uid == userId;
       }
 
-      //Function to check if the user is the owner and document exists
       function isExistingOwner(userId) {
         return isOwner(userId) && resource != null;
       }
+
       allow get: if isOwner(userId);
       allow list: if isOwner(userId);
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isExistingOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Enforces access control for planned meals under a user's profile.
+     * @path /users/{userId}/plannedMeals/{plannedMealId}
+     * @allow (create) - Authenticated user can create planned meals under their own profile.
+     * @allow (get, list, update, delete) - Authenticated user can access/modify their own planned meals.
+     * @deny (create) - If the `userId` does not match `auth.uid`.
+     * @deny (update,delete) - If the document does not exist
+     * @principle Enforces document ownership; users can only manage their own planned meals.
+     */
+    match /users/{userId}/plannedMeals/{plannedMealId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return isSignedIn() && request.auth.uid == userId;
+      }
+
+       function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isExistingOwner(userId);
     }
   }
