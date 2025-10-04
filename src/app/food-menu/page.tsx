@@ -21,6 +21,8 @@ import {
 import { format, startOfDay, endOfDay, addDays, subDays, isToday, isYesterday, isTomorrow } from 'date-fns';
 import { MealContent } from '@/components/meal-content';
 import type { LoggedMeal, MealData, MealTime } from '@/app/log-meal/layout';
+import { PageHeader } from '@/components/page-header';
+
 
 const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDateChange: (newDate: Date) => void }) => {
   const previousDate = subDays(currentDate, 1);
@@ -45,6 +47,7 @@ const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDat
     </div>
   );
 };
+
 
 export default function FoodMenuPage() {
   const { user } = useUser();
@@ -126,7 +129,7 @@ export default function FoodMenuPage() {
 
   return (
     <AppShell>
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-4">
             <header className="flex justify-between items-center">
                 <h1 className="font-serif text-4xl">
                 Break<span className="font-bold">fast</span>
@@ -137,38 +140,40 @@ export default function FoodMenuPage() {
                 </div>
             </header>
 
-            <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon">
-                    <Filter className="h-4 w-4" />
-                </Button>
-                <div className="overflow-x-auto w-full">
-                    <div className="flex gap-2">
-                    {mealTabs.map((filter) => (
-                        <Button
-                        key={filter.value}
-                        variant={activeMealTab === filter.value ? 'default' : 'outline'}
-                        className="rounded-full"
-                        onClick={() => setActiveMealTab(filter.value as MealTime)}
-                        >
-                        {filter.label}
-                        </Button>
-                    ))}
-                    </div>
-                </div>
-            </div>
-
             <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
 
-            <Tabs defaultValue="breakfast" className="w-full" value={activeMealTab} onValueChange={(value) => setActiveMealTab(value as MealTime)}>
-                {mealTabs.map((meal) => (
-                    <TabsContent key={meal.value} value={meal.value} className="mt-0">
-                        <MealContent
-                        mealTime={meal.value as MealTime}
-                        loggedMeals={loggedMeals[meal.value as MealTime] || []}
-                        currentDate={currentDate}
-                        />
-                    </TabsContent>
-                ))}
+            <Tabs 
+              defaultValue="breakfast" 
+              className="grid grid-cols-1 md:grid-cols-[200px_1fr] gap-8" 
+              orientation="vertical"
+              value={activeMealTab} 
+              onValueChange={(value) => setActiveMealTab(value as MealTime)}
+            >
+                <TabsList className="flex-col h-full bg-transparent p-0 gap-2">
+                    {mealTabs.map((meal) => (
+                        <TabsTrigger 
+                            key={meal.value} 
+                            value={meal.value} 
+                            className={cn(
+                                'w-full justify-start text-lg p-3 data-[state=active]:bg-card data-[state=active]:text-primary data-[state=active]:shadow-none'
+                            )}
+                        >
+                            {meal.label}
+                        </TabsTrigger>
+                    ))}
+                </TabsList>
+
+                <div className="w-full">
+                    {mealTabs.map((meal) => (
+                        <TabsContent key={meal.value} value={meal.value} className="mt-0">
+                            <MealContent
+                            mealTime={meal.value as MealTime}
+                            loggedMeals={loggedMeals[meal.value as MealTime] || []}
+                            currentDate={currentDate}
+                            />
+                        </TabsContent>
+                    ))}
+                </div>
             </Tabs>
         </div>
     </AppShell>
