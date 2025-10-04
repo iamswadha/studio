@@ -3,7 +3,6 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 import { ThemeProvider } from '@/components/theme-provider';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryProvider } from '@/components/react-query-provider';
 
 export const metadata: Metadata = {

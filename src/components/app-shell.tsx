@@ -8,6 +8,8 @@ import {
   LineChart,
   User,
   LogOut,
+  Bookmark,
+  Menu,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -18,8 +20,8 @@ import { Logo } from './logo';
 
 const navItems = [
   { href: '/food-menu', icon: LayoutGrid, label: 'Home' },
-  { href: '/log-meal', icon: BookOpen, label: 'Diary' },
-  { href: '/progress', icon: LineChart, label: 'Progress' },
+  { href: '/log-meal', icon: Bookmark, label: 'Diary' },
+  { href: '/progress', icon: Menu, label: 'Progress' },
   { href: '/profile', icon: User, label: 'Profile' },
 ];
 
