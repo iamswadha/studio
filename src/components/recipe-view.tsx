@@ -123,7 +123,7 @@ export function RecipeView({ recipe, onPlan }: RecipeViewProps) {
             ) : (
               <Plus className="mr-2 h-4 w-4" />
             )}
-            Add to Tomorrow's Plan
+            Add to Plan
           </Button>
         </DialogFooter>
       </DialogContent>
