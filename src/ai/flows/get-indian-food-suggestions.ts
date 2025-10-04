@@ -54,7 +54,7 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert on Indian cuisine. The user is searching for Indian food items.
 Based on their query: {{{query}}}, provide a list of 5 relevant Indian food suggestions.
 For each suggestion, provide:
-1. A realistic and appealing image URL. You can use Unsplash for images.
+1. A realistic and appealing image URL using https://picsum.photos/seed/{food_name_in_lowercase_and_kebab_case}/600/400.
 2. A short, one-sentence enticing description of the food.
 3. A list of ingredients.
 4. The step-by-step recipe.
