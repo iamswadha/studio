@@ -1,3 +1,4 @@
+
 'use client';
 
 import { AppShell } from '@/components/app-shell';
@@ -111,35 +112,6 @@ export default function ProfilePage() {
                     )}
                   </CardContent>
                 </Card>
-            </div>
-            <div className="lg:col-span-2 space-y-8">
-                <Card>
-                    <CardHeader>
-                      <CardTitle>Weight Trend</CardTitle>
-                      <CardDescription>
-                        Your weight progress over the last few weeks.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ChartContainer config={chartConfig} className="h-[250px] w-full">
-                        <LineChart data={weightData} accessibilityLayer>
-                          <CartesianGrid vertical={false} />
-                          <XAxis
-                            dataKey="date"
-                            tickLine={false}
-                            tickMargin={10}
-                            axisLine={false}
-                          />
-                          <YAxis domain={['dataMin - 1', 'dataMax + 1']} />
-                          <ChartTooltip
-                            cursor={true}
-                            content={<ChartTooltipContent />}
-                          />
-                          <Line type="monotone" dataKey="weight" stroke="var(--color-weight)" strokeWidth={2} dot={{r: 4, fill: "var(--color-weight)"}} />
-                        </LineChart>
-                      </ChartContainer>
-                    </CardContent>
-                </Card>
                 <Card>
                     <CardHeader>
                       <CardTitle>Weekly Activity Summary</CardTitle>
@@ -169,6 +141,35 @@ export default function ProfilePage() {
                                 <p className='text-sm text-muted-foreground'>Avg Minutes</p>
                             </div>
                         </div>
+                    </CardContent>
+                </Card>
+            </div>
+            <div className="lg:col-span-2 space-y-8">
+                <Card>
+                    <CardHeader>
+                      <CardTitle>Weight Trend</CardTitle>
+                      <CardDescription>
+                        Your weight progress over the last few weeks.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ChartContainer config={chartConfig} className="h-[250px] w-full">
+                        <LineChart data={weightData} accessibilityLayer>
+                          <CartesianGrid vertical={false} />
+                          <XAxis
+                            dataKey="date"
+                            tickLine={false}
+                            tickMargin={10}
+                            axisLine={false}
+                          />
+                          <YAxis domain={['dataMin - 1', 'dataMax + 1']} />
+                          <ChartTooltip
+                            cursor={true}
+                            content={<ChartTooltipContent />}
+                          />
+                          <Line type="monotone" dataKey="weight" stroke="var(--color-weight)" strokeWidth={2} dot={{r: 4, fill: "var(--color-weight)"}} />
+                        </LineChart>
+                      </ChartContainer>
                     </CardContent>
                 </Card>
             </div>
