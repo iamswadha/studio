@@ -14,7 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Search, Grid, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Grid } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   useUser,
@@ -32,12 +32,10 @@ import {
 import { format, startOfDay, endOfDay, addDays, subDays, isToday, isYesterday, isTomorrow } from 'date-fns';
 import { MealContent } from '@/components/meal-content';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { PageHeader } from '@/components/page-header';
 import type { LoggedMeal, MealData, MealTime } from '@/app/log-meal/layout';
 
 
 const categories = ['Bread', 'Noodles', 'Seafood', 'Pizza', 'Pasta'];
-const filters = ['Beer', 'Foods', 'Wine'];
 
 const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDateChange: (newDate: Date) => void }) => {
   const previousDate = subDays(currentDate, 1);
@@ -70,7 +68,7 @@ export default function FoodMenuPage() {
   });
 
   const [activeCategory, setActiveCategory] = useState('Bread');
-  const [activeFilter, setActiveFilter] = useState('Foods');
+  const [activeFilter, setActiveFilter] = useState('breakfast');
 
   const { user } = useUser();
   const firestore = useFirestore();
@@ -221,19 +219,19 @@ export default function FoodMenuPage() {
             )}
 
             <div className="flex justify-center items-center gap-4">
-              {filters.map((filter) => (
+              {mealTabs.map((meal) => (
                 <Button
-                  key={filter}
-                  variant={activeFilter === filter ? 'default' : 'ghost'}
+                  key={meal.value}
+                  variant={activeFilter === meal.value ? 'default' : 'ghost'}
                   className={cn(
                     'rounded-full px-6',
-                    activeFilter === filter
+                    activeFilter === meal.value
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-card text-card-foreground'
                   )}
-                  onClick={() => setActiveFilter(filter)}
+                  onClick={() => setActiveFilter(meal.value)}
                 >
-                  {filter}
+                  {meal.label}
                 </Button>
               ))}
             </div>
