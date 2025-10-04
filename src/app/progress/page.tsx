@@ -17,6 +17,10 @@ import {
 } from '@/components/ui/chart';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Line, LineChart } from 'recharts';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Trophy } from 'lucide-react';
 
 const chartDataWeekly = [
   { day: 'Mon', calories: 2200, water: 8 },
@@ -53,6 +57,15 @@ const chartConfig: ChartConfig = {
 };
 
 export default function ProgressPage() {
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const userDocRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return doc(firestore, 'users', user.uid);
+  }, [firestore, user]);
+
+  const { data: userProfile, isLoading } = useDoc(userDocRef);
+
   return (
     <AppShell>
       <div className="flex flex-col gap-8">
@@ -60,6 +73,26 @@ export default function ProgressPage() {
           title="Your Progress"
           description="Visualize your journey and celebrate your milestones. Consistency is key!"
         />
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+                <Trophy className="text-primary" />
+                Your Health Goal
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <Skeleton className="h-6 w-3/4" />
+            ) : userProfile ? (
+              <p className="text-lg text-muted-foreground">
+                "{userProfile.fitnessGoals}"
+              </p>
+            ) : (
+              <p>No fitness goals set yet. Go to your profile to add one!</p>
+            )}
+          </CardContent>
+        </Card>
 
         <Tabs defaultValue="weekly" className="w-full">
           <TabsList className="grid w-full max-w-[400px] grid-cols-2">
