@@ -419,7 +419,7 @@ export function HealthifySnap({
               </Link>
           </Button>
       </PageHeader>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      <div className="max-w-4xl mx-auto w-full space-y-8">
         <Card>
           <form onSubmit={handleFormSubmit}>
             <CardHeader>
@@ -472,7 +472,7 @@ export function HealthifySnap({
           </form>
         </Card>
 
-        <Card className="sticky top-24">
+        <Card>
           <CardHeader>
             <CardTitle>Analysis Results</CardTitle>
             <CardDescription>
