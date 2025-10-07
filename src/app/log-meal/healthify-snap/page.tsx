@@ -39,8 +39,8 @@ export default function HealthifySnapPage() {
     };
 
     const handleBack = () => {
-      const backDate = dateParam ? new Date(dateParam) : new Date();
-      router.push(`/dashboard?date=${backDate.toISOString().split('T')[0]}`);
+      const backDate = dateParam || new Date().toISOString().split('T')[0];
+      router.push(`/dashboard?date=${backDate}`);
     };
 
     return <HealthifySnap onLogMeal={handleLogMeal} onBack={handleBack} />

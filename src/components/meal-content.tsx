@@ -37,7 +37,7 @@ export const MealContent = ({ mealTime, loggedMeals, currentDate }: { mealTime: 
   const totalCals = loggedMeals.reduce((sum, meal) => sum + meal.totalNutrition.calories, 0);
   const { user } = useUser();
   const firestore = useFirestore();
-  const dateParam = currentDate.toISOString();
+  const dateParam = currentDate.toISOString().split('T')[0];
   const { toast } = useToast();
   const [isAddingFood, setIsAddingFood] = useState(false);
 
