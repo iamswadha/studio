@@ -52,12 +52,14 @@ export default function DashboardPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
-  const [activeTab, setActiveTab] = useState<'today' | 'tomorrow'>('today');
   const [activeMealTab, setActiveMealTab] = useState<MealTime>('breakfast');
 
   useEffect(() => {
     setCurrentDate(new Date());
   }, []);
+  
+  const activeTab = isTomorrow(currentDate || new Date()) ? 'tomorrow' : 'today';
+
 
   const mealsQuery = useMemoFirebase(() => {
     if (!user || !currentDate || activeTab !== 'today') return null;
@@ -135,32 +137,11 @@ export default function DashboardPage() {
     <AppShell>
       <div className="flex flex-col gap-4">
         <PageHeader title={activeTabLabel} />
-
-        <div className="flex justify-center my-4">
-          <div className="flex items-center gap-2 rounded-full bg-card p-1">
-            <Button
-              variant={activeTab === 'today' ? 'secondary' : 'ghost'}
-              size="sm"
-              className="rounded-full"
-              onClick={() => setActiveTab('today')}
-            >
-              Today
-            </Button>
-            <Button
-              variant={activeTab === 'tomorrow' ? 'secondary' : 'ghost'}
-              size="sm"
-              className="rounded-full"
-              onClick={() => setActiveTab('tomorrow')}
-            >
-              Tomorrow
-            </Button>
-          </div>
-        </div>
+        
+        <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
 
         {activeTab === 'today' && (
           <>
-            <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
-
             <div className="flex justify-center my-4">
               <div className="flex items-center gap-2 rounded-full bg-card p-1">
                 {mealTabs.map((filter) => (
