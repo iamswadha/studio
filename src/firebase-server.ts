@@ -6,15 +6,28 @@ import { config } from 'dotenv';
 
 config();
 
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-  : undefined;
+const serviceAccountString = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+let serviceAccount: object | undefined;
+
+if (serviceAccountString) {
+  try {
+    serviceAccount = JSON.parse(serviceAccountString);
+  } catch (error) {
+    console.error("Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY. Make sure it's a valid JSON string.", error);
+    serviceAccount = undefined;
+  }
+}
+
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export async function getFirebase() {
+  if (!serviceAccount) {
+    throw new Error('Firebase Admin SDK service account is not configured. Please set the FIREBASE_SERVICE_ACCOUNT_KEY environment variable.');
+  }
+
   if (getApps().length === 0) {
     initializeApp({
-        credential: cert(serviceAccount!),
+        credential: cert(serviceAccount),
     });
   }
   return {

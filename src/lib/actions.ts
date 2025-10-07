@@ -131,20 +131,32 @@ export async function planMealForTomorrow(meal: Recipe) {
         await addDoc(plannedMealsCol, mealToPlan);
 
         return { success: true };
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error planning meal:", error);
-        return { success: false, error: "Could not save the planned meal. Please try again." };
+        const errorMessage = error.message.includes('FIREBASE_SERVICE_ACCOUNT_KEY')
+            ? 'Server is not configured for this action. Please set the FIREBASE_SERVICE_ACCOUNT_KEY in your environment.'
+            : 'Could not save the planned meal. Please try again.';
+        return { success: false, error: errorMessage };
     }
 }
 
 export async function logMeal(input: Omit<LogMealInput, 'userId'>) {
-    const { auth } = await getFirebase();
-    const headersList = headers();
-    const userToken = headersList.get('X-Firebase-AppCheck');
-    if (!userToken) {
-        throw new Error('User is not authenticated.');
+    try {
+        const { auth } = await getFirebase();
+        const headersList = headers();
+        const userToken = headersList.get('X-Firebase-AppCheck');
+        if (!userToken) {
+            throw new Error('User is not authenticated.');
+        }
+        const decodedToken = await auth.verifyIdToken(userToken);
+        
+        return await logMealFlow({ ...input, userId: decodedToken.uid });
+    } catch (error: any) {
+         console.error("Error logging meal:", error);
+         const errorMessage = error.message.includes('FIREBASE_SERVICE_ACCOUNT_KEY')
+            ? 'Server is not configured for this action. Please set the FIREBASE_SERVICE_ACCOUNT_KEY in your environment.'
+            : 'Could not save the meal. Please try again.';
+        // We need to return a compatible structure for the client-side logic that calls this.
+        return { success: false, error: errorMessage };
     }
-    const decodedToken = await auth.verifyIdToken(userToken);
-    
-    return logMealFlow({ ...input, userId: decodedToken.uid });
 }
