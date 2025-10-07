@@ -39,7 +39,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PageHeader } from './page-header';
-import Link from 'next/link';
 
 type FoodItem = {
   id: number;
@@ -61,11 +60,13 @@ type MealTime =
 
 export function HealthifySnap({
   onLogMeal,
+  onBack,
 }: {
   onLogMeal: (meal: {
     mealTime: MealTime;
     items: FoodItem[];
   }) => Promise<void>;
+  onBack: () => void;
 }) {
   const [preview, setPreview] = useState<string | null>(null);
   const [foodItems, setFoodItems] = useState<FoodItem[]>([]);
@@ -406,14 +407,12 @@ export function HealthifySnap({
   return (
     <>
       <PageHeader title="HealthifySnap">
-          <Button variant="outline" asChild>
-              <Link href="/dashboard">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Diary
-              </Link>
+          <Button variant="outline" onClick={onBack}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Diary
           </Button>
       </PageHeader>
-      <div className="max-w-4xl mx-auto w-full space-y-8">
+      <div className="max-w-md mx-auto w-full space-y-8">
         <Card>
           <form onSubmit={handleFormSubmit}>
             <CardHeader>

@@ -22,6 +22,7 @@ import { MealContent } from '@/components/meal-content';
 import type { LoggedMeal, MealData, MealTime } from '@/app/log-meal/layout';
 import { PageHeader } from '@/components/page-header';
 import { PlannedMealContent } from '@/components/planned-meal-content';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDateChange: (newDate: Date) => void }) => {
   const previousDate = subDays(currentDate, 1);
@@ -51,12 +52,29 @@ const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDat
 export default function DashboardPage() {
   const { user } = useUser();
   const firestore = useFirestore();
-  const [currentDate, setCurrentDate] = useState<Date | null>(null);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  
+  const [currentDate, setCurrentDate] = useState<Date>(() => {
+    const dateParam = searchParams.get('date');
+    return dateParam ? new Date(dateParam) : new Date();
+  });
+  
   const [activeMealTab, setActiveMealTab] = useState<MealTime>('breakfast');
 
   useEffect(() => {
-    setCurrentDate(new Date());
-  }, []);
+    const dateParam = searchParams.get('date');
+    const newDate = dateParam ? new Date(dateParam) : new Date();
+    // Only update if the date is different to avoid re-renders
+    if (newDate.toDateString() !== currentDate.toDateString()) {
+      setCurrentDate(newDate);
+    }
+  }, [searchParams, currentDate]);
+
+  const handleDateChange = (newDate: Date) => {
+    setCurrentDate(newDate);
+    router.push(`/dashboard?date=${newDate.toISOString().split('T')[0]}`);
+  };
   
   const activeTab = isTomorrow(currentDate || new Date()) ? 'tomorrow' : 'today';
 
@@ -138,7 +156,7 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-4">
         <PageHeader title={activeTabLabel} />
         
-        <DateNavigator currentDate={currentDate} onDateChange={setCurrentDate} />
+        <DateNavigator currentDate={currentDate} onDateChange={handleDateChange} />
 
         {activeTab === 'today' && (
           <>
