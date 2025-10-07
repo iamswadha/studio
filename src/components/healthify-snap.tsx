@@ -82,9 +82,9 @@ export function HealthifySnap({
     return foodItems.reduce(
       (acc, item) => ({
         calories: acc.calories + item.calories,
-        protein: acc.calories + item.protein,
-        carbohydrates: acc.calories + item.carbohydrates,
-        fat: acc.calories + item.fat,
+        protein: acc.protein + item.protein,
+        carbohydrates: acc.carbohydrates + item.carbohydrates,
+        fat: acc.fat + item.fat,
       }),
       { calories: 0, protein: 0, carbohydrates: 0, fat: 0 }
     );
@@ -192,12 +192,6 @@ export function HealthifySnap({
           )} kcal for ${mealTime}.`,
         });
 
-        // Reset state after successful logging
-        setPreview(null);
-        setFoodItems([]);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
     } catch(e) {
         console.error("Failed to log meal", e);
         toast({

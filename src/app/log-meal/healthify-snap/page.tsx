@@ -30,7 +30,6 @@ export default function HealthifySnapPage() {
         const selectedDate = dateParam ? new Date(dateParam) : new Date();
 
         await logMeal({
-            userId: user.uid,
             mealTime: meal.mealTime,
             date: selectedDate.toISOString(),
             items: meal.items,
