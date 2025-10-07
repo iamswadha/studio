@@ -55,21 +55,14 @@ export default function DashboardPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
-  const [currentDate, setCurrentDate] = useState<Date>(() => {
-    const dateParam = searchParams.get('date');
-    return dateParam ? new Date(dateParam) : new Date();
-  });
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
   
   const [activeMealTab, setActiveMealTab] = useState<MealTime>('breakfast');
 
   useEffect(() => {
     const dateParam = searchParams.get('date');
-    const newDate = dateParam ? new Date(dateParam) : new Date();
-    // Only update if the date is different to avoid re-renders
-    if (newDate.toDateString() !== currentDate.toDateString()) {
-      setCurrentDate(newDate);
-    }
-  }, [searchParams, currentDate]);
+    setCurrentDate(dateParam ? new Date(dateParam) : new Date());
+  }, [searchParams]);
 
   const handleDateChange = (newDate: Date) => {
     setCurrentDate(newDate);
