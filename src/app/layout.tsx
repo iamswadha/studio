@@ -4,6 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 import { ThemeProvider } from '@/components/theme-provider';
 import { ReactQueryProvider } from '@/components/react-query-provider';
+import { AuthWrapper } from '@/components/auth-wrapper';
 
 export const metadata: Metadata = {
   title: 'OyeBhukkaD',
@@ -38,7 +39,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <FirebaseClientProvider>
-              {children}
+              <AuthWrapper>{children}</AuthWrapper>
               <Toaster />
             </FirebaseClientProvider>
           </ThemeProvider>
