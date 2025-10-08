@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Search, Camera } from 'lucide-react';
+import { Search, Camera, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { getIndianFoodSuggestions, planMealForTomorrow } from '@/lib/actions';
@@ -41,18 +41,19 @@ function PlannedMeals() {
   const firestore = useFirestore();
 
   const plannedMealsQuery = useMemoFirebase(() => {
-    if (!user) return null;
+    // Do not run the query if user is not loaded or does not exist
+    if (isUserLoading || !user) return null;
     const tomorrow = startOfTomorrow();
     return query(
       collection(firestore, 'users', user.uid, 'plannedMeals'),
       where('planDate', '>=', Timestamp.fromDate(tomorrow)),
       where('planDate', '<', Timestamp.fromDate(new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)))
     );
-  }, [user, firestore]);
+  }, [user, firestore, isUserLoading]);
 
-  const { data: plannedMeals, isLoading } = useCollection<PlannedMeal>(plannedMealsQuery);
+  const { data: plannedMeals, isLoading: isLoadingPlannedMeals } = useCollection<PlannedMeal>(plannedMealsQuery);
 
-  if (isLoading || isUserLoading) {
+  if (isUserLoading || isLoadingPlannedMeals) {
     return (
       <Card>
         <CardHeader>
@@ -107,6 +108,7 @@ function PlannedMeals() {
 
 export default function FoodMenuPage() {
   const { toast } = useToast();
+  const { isUserLoading } = useUser();
   const [searchQuery, setSearchQuery] = useState('healthy');
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
@@ -176,7 +178,13 @@ export default function FoodMenuPage() {
           ))}
         </div>
         
-        <PlannedMeals />
+        {isUserLoading ? (
+            <Card>
+                <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
+                <CardContent><Skeleton className="h-10 w-full" /></CardContent>
+            </Card>
+        ) : <PlannedMeals />}
+
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {isLoadingSuggestions &&
