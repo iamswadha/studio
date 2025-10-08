@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { AppShell } from '@/components/app-shell';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Search, Grid, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import {
   useUser,
   useFirestore,
@@ -22,7 +22,7 @@ import { MealContent } from '@/components/meal-content';
 import type { LoggedMeal, MealData, MealTime } from '@/app/log-meal/layout';
 import { PageHeader } from '@/components/page-header';
 import { PlannedMealContent } from '@/components/planned-meal-content';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 
 const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDateChange: (newDate: Date) => void }) => {
   const previousDate = subDays(currentDate, 1);
@@ -50,10 +50,11 @@ const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDat
 
 
 export default function DashboardPage() {
-  const { user, isUserLoading } = useUser();
+  const { user } = useUser();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
   
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
   
@@ -65,15 +66,16 @@ export default function DashboardPage() {
   }, [searchParams]);
 
   const handleDateChange = (newDate: Date) => {
+    const newDateString = newDate.toISOString().split('T')[0];
     setCurrentDate(newDate);
-    router.push(`/dashboard?date=${newDate.toISOString().split('T')[0]}`);
+    router.push(`${pathname}?date=${newDateString}`);
   };
   
   const activeTab = isTomorrow(currentDate || new Date()) ? 'tomorrow' : 'today';
 
 
   const mealsQuery = useMemoFirebase(() => {
-    if (!user || !currentDate || activeTab !== 'today') return null;
+    if (!user || !firestore || !currentDate || activeTab !== 'today') return null;
 
     const start = startOfDay(currentDate);
     const end = endOfDay(currentDate);
@@ -86,7 +88,7 @@ export default function DashboardPage() {
     );
   }, [firestore, user, currentDate, activeTab]);
 
-  const { data: mealsFromDb } = useCollection<LoggedMeal>(mealsQuery);
+  const { data: mealsFromDb, isLoading: isLoadingMeals } = useCollection<LoggedMeal>(mealsQuery);
 
   const [loggedMeals, setLoggedMeals] = useState<MealData>({
     breakfast: [],
@@ -126,7 +128,7 @@ export default function DashboardPage() {
     ? mealTabs.find(tab => tab.value === activeMealTab)?.label || 'Diary' 
     : 'Tomorrow';
 
-  if (isUserLoading || !currentDate) {
+  if (!currentDate) {
      return (
       <AppShell>
         <div className="flex h-full items-center justify-center">
@@ -162,7 +164,11 @@ export default function DashboardPage() {
             </div>
 
             <div className="w-full">
-                {mealTabs.map((meal) => (
+              {isLoadingMeals ? (
+                 <div className="flex justify-center p-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                 </div>
+              ) : mealTabs.map((meal) => (
                     <div key={meal.value} className={cn(activeMealTab === meal.value ? 'block' : 'hidden' )}>
                         <MealContent
                         mealTime={meal.value as MealTime}
