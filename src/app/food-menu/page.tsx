@@ -42,7 +42,7 @@ function PlannedMeals() {
   const firestore = useFirestore();
 
   const plannedMealsQuery = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
+    if (!user) return null;
     const tomorrow = startOfTomorrow();
     return query(
       collection(firestore, 'users', user.uid, 'plannedMeals'),
@@ -53,7 +53,7 @@ function PlannedMeals() {
 
   const { data: plannedMeals, isLoading: isLoadingPlannedMeals } = useCollection<PlannedMeal>(plannedMealsQuery);
 
-  if (isUserLoading || (isLoadingPlannedMeals && !plannedMeals) ) {
+  if (isUserLoading || (isLoadingPlannedMeals && !plannedMeals)) {
     return (
       <Card>
         <CardHeader>
