@@ -54,7 +54,7 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert on Indian cuisine. The user is searching for Indian food items.
 Based on their query: {{{query}}}, provide a list of 5 relevant Indian food suggestions.
 For each suggestion, provide:
-1. A realistic and appealing image URL. You must generate this image.
+1. A realistic and appealing image URL. You can use a placeholder like https://picsum.photos/seed/your-seed/600/400.
 2. A short, one-sentence enticing description of the food.
 3. A list of ingredients.
 4. The step-by-step recipe.
@@ -69,28 +69,14 @@ const indianFoodSuggestionsFlow = ai.defineFlow(
     outputSchema: IndianFoodSuggestionsOutputSchema,
   },
   async (input) => {
-    const llmResponse = await prompt(input);
-    const suggestions = llmResponse.output?.suggestions || [];
+    const {output} = await prompt(input);
+    const suggestions = output?.suggestions || [];
 
-    const suggestionsWithImages = await Promise.all(
-      suggestions.map(async (suggestion) => {
-        try {
-          const { media } = await ai.generate({
-            model: 'googleai/imagen-4.0-fast-generate-001',
-            prompt: `Generate a high-quality, photorealistic image of the Indian dish: ${suggestion.name}. The meal should be on a clean white plate. The image should be well-lit, appetizing, and look like it was taken for a food blog.`,
-          });
-
-          if (media.url) {
-            suggestion.imageUrl = media.url;
-          }
-        } catch (error) {
-          console.error(`Failed to generate image for ${suggestion.name}`, error);
-          // Fallback to a placeholder if generation fails
-          suggestion.imageUrl = `https://picsum.photos/seed/${suggestion.name.toLowerCase().replace(/\s/g, '-')}/600/400`;
-        }
+    const suggestionsWithImages = suggestions.map((suggestion) => {
+        // Replace imageUrl with a placeholder if it's not a valid URL or to avoid generation errors.
+        suggestion.imageUrl = `https://picsum.photos/seed/${suggestion.name.toLowerCase().replace(/\s/g, '-')}/600/400`;
         return suggestion;
-      })
-    );
+    });
 
     return { suggestions: suggestionsWithImages };
   }
