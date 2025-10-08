@@ -37,7 +37,7 @@ const mealCategories = [
 ];
 
 function PlannedMeals() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
   const plannedMealsQuery = useMemoFirebase(() => {
@@ -52,7 +52,7 @@ function PlannedMeals() {
 
   const { data: plannedMeals, isLoading } = useCollection<PlannedMeal>(plannedMealsQuery);
 
-  if (isLoading) {
+  if (isLoading || isUserLoading) {
     return (
       <Card>
         <CardHeader>

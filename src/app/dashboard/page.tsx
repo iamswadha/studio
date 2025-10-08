@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { AppShell } from '@/components/app-shell';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Search, Grid } from 'lucide-react';
+import { Search, Grid, Loader2 } from 'lucide-react';
 import {
   useUser,
   useFirestore,
@@ -50,7 +50,7 @@ const DateNavigator = ({ currentDate, onDateChange }: { currentDate: Date, onDat
 
 
 export default function DashboardPage() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -126,19 +126,11 @@ export default function DashboardPage() {
     ? mealTabs.find(tab => tab.value === activeMealTab)?.label || 'Diary' 
     : 'Tomorrow';
 
-  if (!currentDate) {
+  if (isUserLoading || !currentDate) {
      return (
       <AppShell>
-        <div className="flex flex-col gap-8">
-          <header className="flex justify-between items-center">
-            <h1 className="font-serif text-4xl">
-              Break<span className="font-bold">fast</span>
-            </h1>
-            <div className="flex items-center gap-4">
-              <Search className="h-6 w-6 text-muted-foreground" />
-              <Grid className="h-6 w-6 text-muted-foreground" />
-            </div>
-          </header>
+        <div className="flex h-full items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
       </AppShell>
      )

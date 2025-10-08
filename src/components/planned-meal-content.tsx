@@ -19,7 +19,7 @@ import { Skeleton } from './ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 
 export const PlannedMealContent = () => {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
 
@@ -44,6 +44,14 @@ export const PlannedMealContent = () => {
       description: `You can now log "${meal.name}" to your diary.`,
     });
   };
+
+  if (isUserLoading) {
+      return (
+          <div className="flex h-full items-center justify-center p-8">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          </div>
+      )
+  }
 
   return (
     <Card>
