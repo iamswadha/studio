@@ -1,3 +1,4 @@
+
 'use client';
 
 import { AppShell } from '@/components/app-shell';
@@ -41,26 +42,24 @@ function PlannedMeals() {
   const firestore = useFirestore();
 
   const plannedMealsQuery = useMemoFirebase(() => {
-    // Do not run the query if user is not loaded or does not exist
-    if (isUserLoading || !user) return null;
+    if (!user || !firestore) return null;
     const tomorrow = startOfTomorrow();
     return query(
       collection(firestore, 'users', user.uid, 'plannedMeals'),
       where('planDate', '>=', Timestamp.fromDate(tomorrow)),
       where('planDate', '<', Timestamp.fromDate(new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)))
     );
-  }, [user, firestore, isUserLoading]);
+  }, [user, firestore]);
 
   const { data: plannedMeals, isLoading: isLoadingPlannedMeals } = useCollection<PlannedMeal>(plannedMealsQuery);
 
-  if (isUserLoading || isLoadingPlannedMeals) {
+  if (isUserLoading || (isLoadingPlannedMeals && !plannedMeals) ) {
     return (
       <Card>
         <CardHeader>
           <Skeleton className="h-6 w-1/2" />
         </CardHeader>
         <CardContent className="space-y-4">
-          <Skeleton className="h-10 w-full" />
           <Skeleton className="h-10 w-full" />
         </CardContent>
       </Card>
@@ -178,12 +177,7 @@ export default function FoodMenuPage() {
           ))}
         </div>
         
-        {isUserLoading ? (
-            <Card>
-                <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
-                <CardContent><Skeleton className="h-10 w-full" /></CardContent>
-            </Card>
-        ) : <PlannedMeals />}
+        <PlannedMeals />
 
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
